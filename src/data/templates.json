@@ -1,0 +1,119 @@
+[
+  {
+    "id": "account-management",
+    "statementTemplate": "{{title}}. {{objective}} Evidence for {{controlId}} must show active accounts have owners and recent access reviews.",
+    "regoTemplate": "package {{packageName}}\n\ndefault allow = false\n\nallow {\n  input.account.active\n  input.account.owner\n  input.account.last_review_days <= 90\n}\n\ndeny[msg] {\n  input.account.active\n  not input.account.owner\n  msg := \"{{controlId}}: active account missing owner\"\n}\n\ndeny[msg] {\n  input.account.last_review_days > 90\n  msg := \"{{controlId}}: access review is stale\"\n}\n",
+    "annotations": [
+      {
+        "label": "Owner required",
+        "detail": "Active accounts must resolve to a named owner or accountable service team."
+      },
+      {
+        "label": "Review freshness",
+        "detail": "Access reviews older than 90 days fail the sample policy."
+      }
+    ],
+    "evidence": {
+      "artifacts": ["identity export", "access review record", "account owner registry"],
+      "queryTemplate": "control_id={{controlId}} AND account_reviewed_at BETWEEN {{start}} AND {{end}}"
+    },
+    "quizSeeds": [
+      {
+        "question": "Which fact is required for an active account to pass this policy?",
+        "choices": ["A named owner", "A disabled MFA setting", "No review history", "A shared password"],
+        "correctIndex": 0,
+        "explanation": "The policy allows active accounts only when an owner is present and the review is current."
+      },
+      {
+        "question": "What review timing does the account-management rule require?",
+        "choices": ["At least every 30 days", "Within 90 days", "Only during onboarding", "After termination"],
+        "correctIndex": 1,
+        "explanation": "The sample Rego denies active accounts when the last review is older than 90 days."
+      },
+      {
+        "question": "Why does the missing-owner scenario fail?",
+        "choices": ["The account is inactive", "The review is too recent", "The active account lacks an accountable owner", "The control ID is unknown"],
+        "correctIndex": 2,
+        "explanation": "Active accounts must map to a named owner or accountable team to satisfy the policy."
+      }
+    ]
+  },
+  {
+    "id": "logging",
+    "statementTemplate": "{{title}}. {{objective}} Evidence for {{controlId}} must show logging is enabled, retained, and alertable.",
+    "regoTemplate": "package {{packageName}}\n\ndefault allow = false\n\nallow {\n  input.logging.enabled\n  input.logging.retention_days >= 180\n  input.logging.alerting\n}\n\ndeny[msg] {\n  not input.logging.enabled\n  msg := \"{{controlId}}: logging is disabled\"\n}\n\ndeny[msg] {\n  input.logging.retention_days < 180\n  msg := \"{{controlId}}: log retention is below minimum\"\n}\n",
+    "annotations": [
+      {
+        "label": "Collection enabled",
+        "detail": "Audit sources must emit events before downstream monitoring can work."
+      },
+      {
+        "label": "Retention threshold",
+        "detail": "The training rule expects at least 180 days of retained audit data."
+      }
+    ],
+    "evidence": {
+      "artifacts": ["log source inventory", "retention policy", "alert routing configuration"],
+      "queryTemplate": "control_id={{controlId}} AND log_event_time BETWEEN {{start}} AND {{end}}"
+    },
+    "quizSeeds": [
+      {
+        "question": "What causes the logging policy to deny a scenario?",
+        "choices": ["Enabled alerting", "Retaining logs for 365 days", "Disabled log collection", "Documented log sources"],
+        "correctIndex": 2,
+        "explanation": "The policy denies when logging is disabled or retention is below the minimum threshold."
+      },
+      {
+        "question": "Which retention period satisfies the logging rule?",
+        "choices": ["30 days", "90 days", "179 days", "365 days"],
+        "correctIndex": 3,
+        "explanation": "The rule allows logging evidence when retained audit data meets or exceeds 180 days."
+      },
+      {
+        "question": "Which evidence best supports alertability?",
+        "choices": ["Alert routing configuration", "A user onboarding form", "An exception register only", "A password reset ticket"],
+        "correctIndex": 0,
+        "explanation": "Alert routing configuration shows that collected logs can drive monitoring response."
+      }
+    ]
+  },
+  {
+    "id": "config-baseline",
+    "statementTemplate": "{{title}}. {{objective}} Evidence for {{controlId}} must show assets match an approved baseline or have an approved exception.",
+    "regoTemplate": "package {{packageName}}\n\ndefault allow = false\n\nallow {\n  input.asset.baseline_id\n  input.asset.drift_count == 0\n}\n\nallow {\n  input.asset.baseline_id\n  input.asset.approved_exception\n}\n\ndeny[msg] {\n  not input.asset.baseline_id\n  msg := \"{{controlId}}: asset missing approved baseline\"\n}\n\ndeny[msg] {\n  input.asset.drift_count > 0\n  not input.asset.approved_exception\n  msg := \"{{controlId}}: unapproved configuration drift detected\"\n}\n",
+    "annotations": [
+      {
+        "label": "Approved baseline",
+        "detail": "Each asset needs a reference baseline to evaluate drift."
+      },
+      {
+        "label": "Exception handling",
+        "detail": "Documented exceptions can pass when drift is explicitly approved."
+      }
+    ],
+    "evidence": {
+      "artifacts": ["configuration scan", "baseline approval record", "exception register"],
+      "queryTemplate": "control_id={{controlId}} AND config_scan_time BETWEEN {{start}} AND {{end}}"
+    },
+    "quizSeeds": [
+      {
+        "question": "When can an asset with configuration drift pass the baseline policy?",
+        "choices": ["When logging is disabled", "When an approved exception exists", "When no baseline exists", "When the asset is unmanaged"],
+        "correctIndex": 1,
+        "explanation": "The sample Rego permits drift only when an approved exception is present."
+      },
+      {
+        "question": "What baseline fact is required before drift can be evaluated?",
+        "choices": ["A baseline_id", "A shared account", "An unapproved change", "A disabled scanner"],
+        "correctIndex": 0,
+        "explanation": "The rule denies assets that do not identify an approved baseline."
+      },
+      {
+        "question": "Which scenario should deny under the baseline policy?",
+        "choices": ["No drift with a baseline", "Approved exception with drift", "Unapproved drift with a baseline", "Current access review"],
+        "correctIndex": 2,
+        "explanation": "Unapproved drift violates the baseline rule unless a documented exception exists."
+      }
+    ]
+  }
+]

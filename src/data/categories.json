@@ -1,0 +1,22 @@
+[
+  {
+    "id": "access-control",
+    "name": "Access Control",
+    "frameworkIds": ["nist-800-53", "scf", "fedramp-rev5", "cmmc"]
+  },
+  {
+    "id": "audit-accountability",
+    "name": "Audit and Accountability",
+    "frameworkIds": ["nist-800-53", "scf", "cis", "soc2", "fedramp-rev5", "fedramp-20x"]
+  },
+  {
+    "id": "configuration-management",
+    "name": "Configuration Management",
+    "frameworkIds": ["nist-800-53", "scf", "cis", "sox-itgc", "fedramp-rev5", "fedramp-20x"]
+  },
+  {
+    "id": "identity-access",
+    "name": "Identity and Access",
+    "frameworkIds": ["scf", "cis", "soc2", "sox-itgc", "fedramp-20x", "cmmc"]
+  }
+]

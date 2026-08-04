@@ -1,0 +1,100 @@
+[
+  {
+    "familyId": "account-management",
+    "scenarios": [
+      {
+        "id": "account-owner-current-review",
+        "name": "Owned account with current review",
+        "facts": {
+          "account": {
+            "active": true,
+            "owner": "security-platform",
+            "last_review_days": 45
+          }
+        },
+        "expected": "allow",
+        "explanation": "The active account has an accountable owner and was reviewed within 90 days.",
+        "matchedClause": "allow"
+      },
+      {
+        "id": "account-missing-owner",
+        "name": "Active account missing owner",
+        "facts": {
+          "account": {
+            "active": true,
+            "last_review_days": 30
+          }
+        },
+        "expected": "deny",
+        "explanation": "The account is active but lacks an owner, so accountability is missing.",
+        "matchedClause": "deny.missing_owner"
+      }
+    ]
+  },
+  {
+    "familyId": "logging",
+    "scenarios": [
+      {
+        "id": "logging-enabled-retained-alerted",
+        "name": "Logging enabled with retention and alerting",
+        "facts": {
+          "logging": {
+            "enabled": true,
+            "retention_days": 365,
+            "alerting": true
+          }
+        },
+        "expected": "allow",
+        "explanation": "Logs are collected, retained beyond the minimum, and connected to alerting.",
+        "matchedClause": "allow"
+      },
+      {
+        "id": "logging-disabled",
+        "name": "Logging disabled for critical source",
+        "facts": {
+          "logging": {
+            "enabled": false,
+            "retention_days": 365,
+            "alerting": true
+          }
+        },
+        "expected": "deny",
+        "explanation": "Retention and alerting do not compensate for disabled log collection.",
+        "matchedClause": "deny.logging_disabled"
+      }
+    ]
+  },
+  {
+    "familyId": "config-baseline",
+    "scenarios": [
+      {
+        "id": "asset-matches-baseline",
+        "name": "Asset matches approved baseline",
+        "facts": {
+          "asset": {
+            "baseline_id": "linux-hardening-v1",
+            "drift_count": 0,
+            "approved_exception": false
+          }
+        },
+        "expected": "allow",
+        "explanation": "The asset has an approved baseline and no detected configuration drift.",
+        "matchedClause": "allow.no_drift"
+      },
+      {
+        "id": "asset-unapproved-drift",
+        "name": "Asset has unapproved drift",
+        "facts": {
+          "asset": {
+            "baseline_id": "linux-hardening-v1",
+            "drift_count": 3,
+            "approved_exception": false
+          }
+        },
+        "expected": "deny",
+        "explanation": "Detected drift must be remediated or covered by an approved exception.",
+        "matchedClause": "deny.unapproved_drift"
+      }
+    ]
+  }
+]

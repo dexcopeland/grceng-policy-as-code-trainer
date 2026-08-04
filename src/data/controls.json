@@ -1,0 +1,90 @@
+[
+  {
+    "id": "AC-2",
+    "frameworkId": "nist-800-53",
+    "categoryId": "access-control",
+    "title": "Account Management",
+    "objective": "Manage information system accounts across their lifecycle.",
+    "keywords": ["accounts", "joiner", "leaver"],
+    "relatedFrameworkIds": ["scf", "cmmc"],
+    "templateId": "account-management",
+    "fixtureFamilyId": "account-management"
+  },
+  {
+    "id": "IAC-01",
+    "frameworkId": "scf",
+    "categoryId": "identity-access",
+    "title": "Identity Lifecycle Governance",
+    "objective": "Provision, review, and remove identities according to business need.",
+    "keywords": ["identity", "access review", "provisioning"],
+    "relatedFrameworkIds": ["nist-800-53", "soc2", "sox-itgc"],
+    "templateId": "account-management",
+    "fixtureFamilyId": "account-management"
+  },
+  {
+    "id": "CIS-8.2",
+    "frameworkId": "cis",
+    "categoryId": "audit-accountability",
+    "title": "Collect Audit Logs",
+    "objective": "Collect audit logs across enterprise assets to support monitoring and investigation.",
+    "keywords": ["logging", "audit trail", "monitoring"],
+    "relatedFrameworkIds": ["nist-800-53", "fedramp-rev5"],
+    "templateId": "logging",
+    "fixtureFamilyId": "logging"
+  },
+  {
+    "id": "CC7.2",
+    "frameworkId": "soc2",
+    "categoryId": "audit-accountability",
+    "title": "Monitor System Activity",
+    "objective": "Monitor system components and detect anomalies that may indicate security events.",
+    "keywords": ["monitoring", "alerts", "events"],
+    "relatedFrameworkIds": ["cis", "fedramp-20x"],
+    "templateId": "logging",
+    "fixtureFamilyId": "logging"
+  },
+  {
+    "id": "SOX-ITGC-CM-01",
+    "frameworkId": "sox-itgc",
+    "categoryId": "configuration-management",
+    "title": "Financial System Configuration Baselines",
+    "objective": "Maintain approved configuration baselines for systems in scope for financial reporting.",
+    "keywords": ["baseline", "financial systems", "change control"],
+    "relatedFrameworkIds": ["cis", "fedramp-rev5"],
+    "templateId": "config-baseline",
+    "fixtureFamilyId": "config-baseline"
+  },
+  {
+    "id": "AU-2",
+    "frameworkId": "fedramp-rev5",
+    "categoryId": "audit-accountability",
+    "title": "Event Logging",
+    "objective": "Identify and log event types needed to support monitoring and incident response.",
+    "keywords": ["events", "audit", "retention"],
+    "relatedFrameworkIds": ["nist-800-53", "cis", "soc2"],
+    "templateId": "logging",
+    "fixtureFamilyId": "logging"
+  },
+  {
+    "id": "FR20X-CM-01",
+    "frameworkId": "fedramp-20x",
+    "categoryId": "configuration-management",
+    "title": "Continuous Configuration Evidence",
+    "objective": "Continuously validate cloud resource configurations against an approved baseline.",
+    "keywords": ["continuous monitoring", "baseline", "evidence"],
+    "relatedFrameworkIds": ["fedramp-rev5", "cis"],
+    "templateId": "config-baseline",
+    "fixtureFamilyId": "config-baseline"
+  },
+  {
+    "id": "AC.L2-3.1.1",
+    "frameworkId": "cmmc",
+    "categoryId": "access-control",
+    "title": "Authorized Access Control",
+    "objective": "Limit system access to authorized users and processes acting on behalf of authorized users.",
+    "keywords": ["authorized users", "access", "least privilege"],
+    "relatedFrameworkIds": ["nist-800-53", "scf"],
+    "templateId": "account-management",
+    "fixtureFamilyId": "account-management"
+  }
+]
