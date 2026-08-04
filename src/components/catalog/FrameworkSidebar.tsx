@@ -19,7 +19,7 @@ export function FrameworkSidebar({
     <aside className="flex w-full flex-col gap-5 rounded-2xl border border-border bg-card/80 p-5 text-card-foreground md:w-80 md:shrink-0">
       <div className="flex items-start justify-between gap-4">
         <div className="flex flex-col gap-1">
-          <h2 className="text-lg font-semibold text-foreground">Frameworks</h2>
+          <h2 className="text-lg font-semibold text-primary">Frameworks</h2>
           <p className="text-sm text-muted-foreground">
             Select one or more catalogs to build a drill pool.
           </p>

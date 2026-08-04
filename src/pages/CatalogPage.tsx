@@ -88,7 +88,7 @@ export function CatalogPage({ onStartDrill }: CatalogPageProps) {
             />
             <div className="flex flex-col gap-3 rounded-2xl border border-border bg-card/80 p-5 sm:flex-row sm:items-center sm:justify-between">
               <div className="flex flex-col gap-1">
-                <h2 className="text-lg font-semibold text-foreground">
+                <h2 className="text-lg font-semibold text-primary">
                   Ready to practice?
                 </h2>
                 <p className="text-sm text-muted-foreground">

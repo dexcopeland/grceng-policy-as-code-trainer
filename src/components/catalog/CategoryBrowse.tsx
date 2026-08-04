@@ -47,7 +47,7 @@ export function CategoryBrowse({
     <section className="flex min-w-0 flex-1 flex-col gap-5 rounded-2xl border border-border bg-card/80 p-5">
       <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
         <div className="flex flex-col gap-1">
-          <h2 className="text-lg font-semibold text-foreground">
+          <h2 className="text-lg font-semibold text-primary">
             Category browse
           </h2>
           <p className="text-sm text-muted-foreground">
