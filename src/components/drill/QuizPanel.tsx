@@ -28,14 +28,20 @@ export function QuizPanel({ drill }: QuizPanelProps) {
       return answers[questionIndex] === question.correctIndex ? total + 1 : total;
     }, 0);
 
-    saveQuizScore({
+    const result = saveQuizScore({
       controlId: drill.control.id,
       score,
       total: drill.quiz.length,
       at: new Date().toISOString(),
     });
     setSubmittedScore(score);
-    toast.success(`Quiz score saved: ${score}/${drill.quiz.length}`);
+    if (result.persisted) {
+      toast.success(`Quiz score saved: ${score}/${drill.quiz.length}`);
+    } else {
+      toast.warning(
+        `Quiz scored ${score}/${drill.quiz.length}, but progress could not be saved locally.`,
+      );
+    }
   }
 
   return (

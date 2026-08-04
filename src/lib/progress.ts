@@ -18,6 +18,11 @@ export interface ProgressState {
   frameworksPracticed: FrameworkId[];
 }
 
+export interface ProgressWriteResult {
+  state: ProgressState;
+  persisted: boolean;
+}
+
 const EMPTY: ProgressState = {
   recentDrills: [],
   quizScores: [],
@@ -100,16 +105,23 @@ function normalizeProgress(value: unknown): ProgressState {
   };
 }
 
-function writeProgress(state: ProgressState, storage?: Storage): ProgressState {
+function writeProgress(
+  state: ProgressState,
+  storage?: Storage,
+): ProgressWriteResult {
   const target = resolveStorage(storage);
-  if (target) {
-    try {
-      target.setItem(STORAGE_KEY, JSON.stringify(state));
-    } catch {
-      // Persistence is best-effort; drills/quizzes must still work offline.
-    }
+  if (!target) {
+    // No storage available — treat as not persisted so callers do not claim save success.
+    return { state, persisted: false };
   }
-  return state;
+
+  try {
+    target.setItem(STORAGE_KEY, JSON.stringify(state));
+    return { state, persisted: true };
+  } catch {
+    // Persistence is best-effort; drills/quizzes must still work offline.
+    return { state, persisted: false };
+  }
 }
 
 export function loadProgress(storage?: Storage): ProgressState {
@@ -129,7 +141,7 @@ export function loadProgress(storage?: Storage): ProgressState {
 export function saveDrillProgress(
   entry: ProgressState["recentDrills"][number],
   storage?: Storage,
-): ProgressState {
+): ProgressWriteResult {
   const current = loadProgress(storage);
   const state: ProgressState = {
     ...current,
@@ -145,7 +157,7 @@ export function saveDrillProgress(
 export function saveQuizScore(
   entry: ProgressState["quizScores"][number],
   storage?: Storage,
-): ProgressState {
+): ProgressWriteResult {
   const current = loadProgress(storage);
   const state: ProgressState = {
     ...current,
@@ -155,15 +167,17 @@ export function saveQuizScore(
   return writeProgress(state, storage);
 }
 
-export function clearProgress(storage?: Storage): ProgressState {
+export function clearProgress(storage?: Storage): ProgressWriteResult {
   const target = resolveStorage(storage);
-  if (target) {
-    try {
-      target.removeItem(STORAGE_KEY);
-    } catch {
-      // Best-effort clear; return empty in-memory state regardless.
-    }
+  if (!target) {
+    return { state: emptyProgress(), persisted: true };
   }
 
-  return emptyProgress();
+  try {
+    target.removeItem(STORAGE_KEY);
+    return { state: emptyProgress(), persisted: true };
+  } catch {
+    // Clear failed; keep whatever is still on disk so UI does not pretend it cleared.
+    return { state: loadProgress(storage), persisted: false };
+  }
 }

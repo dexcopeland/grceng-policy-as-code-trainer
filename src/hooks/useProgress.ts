@@ -7,7 +7,7 @@ import {
 
 export interface UseProgressResult {
   progress: ProgressState;
-  clear(): void;
+  clear(): { persisted: boolean };
   refresh(): void;
 }
 
@@ -19,7 +19,9 @@ export function useProgress(): UseProgressResult {
   }, []);
 
   const clear = useCallback(() => {
-    setProgress(clearProgress());
+    const result = clearProgress();
+    setProgress(result.state);
+    return { persisted: result.persisted };
   }, []);
 
   return {

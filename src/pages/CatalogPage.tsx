@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { toast } from "sonner";
 import { CategoryBrowse } from "@/components/catalog/CategoryBrowse";
 import { CatalogHeader } from "@/components/catalog/CatalogHeader";
 import { FrameworkSidebar } from "@/components/catalog/FrameworkSidebar";
@@ -26,6 +27,15 @@ export function CatalogPage({ onStartDrill }: CatalogPageProps) {
   const selection = useDrillSelection();
   const { progress, clear } = useProgress();
   const [error, setError] = useState<string | null>(null);
+
+  function handleClearProgress() {
+    const result = clear();
+    if (result.persisted) {
+      toast.success("Progress cleared.");
+    } else {
+      toast.error("Could not clear saved progress. Try again or clear site data.");
+    }
+  }
 
   const categories = useMemo(
     () => listCategoriesForFrameworks(selection.frameworkIds),
@@ -89,7 +99,7 @@ export function CatalogPage({ onStartDrill }: CatalogPageProps) {
     <main className="min-h-screen bg-background px-4 py-6 text-foreground md:px-8 md:py-10">
       <div className="mx-auto flex max-w-7xl flex-col gap-8">
         <CatalogHeader />
-        <ProgressStrip progress={progress} onClearProgress={clear} />
+        <ProgressStrip progress={progress} onClearProgress={handleClearProgress} />
 
         {error ? (
           <Alert variant="destructive" className="border-destructive/60">
