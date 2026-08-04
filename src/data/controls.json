@@ -29,8 +29,8 @@
     "objective": "Generate audit records for auditable events with content needed for investigation and accountability.",
     "keywords": ["audit records", "logging", "events"],
     "relatedFrameworkIds": ["cis", "fedramp-rev5", "soc2"],
-    "templateId": "logging",
-    "fixtureFamilyId": "logging"
+    "templateId": "audit-record-generation",
+    "fixtureFamilyId": "audit-record-generation"
   },
   {
     "id": "CM-2",

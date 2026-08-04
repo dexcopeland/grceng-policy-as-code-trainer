@@ -199,23 +199,56 @@
     ]
   },
   {
+    "familyId": "audit-record-generation",
+    "scenarios": [
+      {
+        "id": "audit-records-complete",
+        "name": "Defined events generate complete records",
+        "facts": {
+          "audit": {
+            "events_defined": true,
+            "records_generated": true,
+            "content_complete": true
+          }
+        },
+        "expected": "allow",
+        "explanation": "Auditable events are defined and produce investigation-ready audit records.",
+        "matchedClause": "allow"
+      },
+      {
+        "id": "audit-records-missing-content",
+        "name": "Records generated with incomplete content",
+        "facts": {
+          "audit": {
+            "events_defined": true,
+            "records_generated": true,
+            "content_complete": false
+          }
+        },
+        "expected": "deny",
+        "explanation": "Generated records still fail when required investigation fields are missing.",
+        "matchedClause": "deny contains msg if content incomplete"
+      }
+    ]
+  },
+  {
     "familyId": "flaw-remediation",
     "scenarios": [
       {
-        "id": "finding-critical-remediated",
-        "name": "Critical finding remediated within SLA",
+        "id": "finding-critical-open-within-sla",
+        "name": "Open critical finding still within SLA",
         "facts": {
           "finding": {
             "tracked": true,
             "severity": "critical",
             "age_days": 7,
-            "remediated": true,
+            "remediated": false,
             "approved_exception": false
           }
         },
         "expected": "allow",
-        "explanation": "The critical finding was tracked and remediated within the 15-day SLA.",
-        "matchedClause": "allow.critical_remediated"
+        "explanation": "A tracked critical finding remains allowed while it is still within the 15-day remediation window.",
+        "matchedClause": "allow.critical_within_sla"
       },
       {
         "id": "finding-critical-overdue",

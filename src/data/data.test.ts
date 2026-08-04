@@ -56,6 +56,39 @@ describe("datasets", () => {
     }
   });
 
+  it("maps AU-12 to an audit-record-generation template, not generic logging", () => {
+    const au12 = controls.find((c) => c.id === "AU-12");
+    expect(au12?.templateId).toBe("audit-record-generation");
+    expect(au12?.fixtureFamilyId).toBe("audit-record-generation");
+
+    const template = templates.find((t) => t.id === "audit-record-generation");
+    expect(template).toBeDefined();
+    expect(template?.regoTemplate).toMatch(/records_generated|content_complete|events_defined/);
+    expect(template?.regoTemplate).not.toMatch(/retention_days/);
+    expect(template?.statementTemplate.toLowerCase()).toMatch(/record/);
+  });
+
+  it("allows critical findings that remain within the remediation SLA", () => {
+    const template = templates.find((t) => t.id === "flaw-remediation");
+    expect(template).toBeDefined();
+
+    const withinSlaAllow =
+      /allow if \{\s*input\.finding\.tracked\s*input\.finding\.severity == "critical"\s*input\.finding\.age_days <= 15\s*\}/;
+    expect(template?.regoTemplate.replace(/\n/g, " ")).toMatch(withinSlaAllow);
+    expect(template?.regoTemplate).not.toMatch(
+      /severity == "critical"\s*\n\s*input\.finding\.age_days <= 15\s*\n\s*input\.finding\.remediated/,
+    );
+
+    const fixture = fixtures.find((f) => f.familyId === "flaw-remediation");
+    const openWithinSla = fixture?.scenarios.find(
+      (s) =>
+        (s.facts.finding as { age_days?: number; remediated?: boolean })
+          ?.age_days === 7 &&
+        (s.facts.finding as { remediated?: boolean })?.remediated === false,
+    );
+    expect(openWithinSla?.expected).toBe("allow");
+  });
+
   it("gives every NIST-tagged category at least one matching control", () => {
     const frameworkId: FrameworkId = "nist-800-53";
     const nistCategories = categories.filter((c) =>
