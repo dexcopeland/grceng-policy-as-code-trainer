@@ -32,6 +32,39 @@
     ]
   },
   {
+    "familyId": "access-enforcement",
+    "scenarios": [
+      {
+        "id": "access-approved-role-action",
+        "name": "Authenticated role with allowed action",
+        "facts": {
+          "request": {
+            "authenticated": true,
+            "role_approved": true,
+            "action_allowed": true
+          }
+        },
+        "expected": "allow",
+        "explanation": "The caller is authenticated, the role is approved, and the action is in policy.",
+        "matchedClause": "allow"
+      },
+      {
+        "id": "access-unapproved-role",
+        "name": "Authenticated caller with unapproved role",
+        "facts": {
+          "request": {
+            "authenticated": true,
+            "role_approved": false,
+            "action_allowed": true
+          }
+        },
+        "expected": "deny",
+        "explanation": "Authentication alone is insufficient when the role is not authorized for the resource.",
+        "matchedClause": "deny contains msg if role not approved"
+      }
+    ]
+  },
+  {
     "familyId": "logging",
     "scenarios": [
       {
@@ -94,6 +127,111 @@
         "expected": "deny",
         "explanation": "Detected drift must be remediated or covered by an approved exception.",
         "matchedClause": "deny contains msg if unapproved drift"
+      }
+    ]
+  },
+  {
+    "familyId": "authentication",
+    "scenarios": [
+      {
+        "id": "auth-unique-mfa-session",
+        "name": "Unique identity with MFA and bound session",
+        "facts": {
+          "auth": {
+            "unique_identity": true,
+            "mfa_satisfied": true,
+            "session_bound": true
+          }
+        },
+        "expected": "allow",
+        "explanation": "The user authenticated as a unique identity with MFA and a bound session.",
+        "matchedClause": "allow"
+      },
+      {
+        "id": "auth-missing-mfa",
+        "name": "Unique identity without MFA",
+        "facts": {
+          "auth": {
+            "unique_identity": true,
+            "mfa_satisfied": false,
+            "session_bound": true
+          }
+        },
+        "expected": "deny",
+        "explanation": "Organizational users must satisfy multi-factor authentication.",
+        "matchedClause": "deny contains msg if mfa not satisfied"
+      }
+    ]
+  },
+  {
+    "familyId": "boundary-protection",
+    "scenarios": [
+      {
+        "id": "boundary-approved-logged-flow",
+        "name": "Managed interface with approved logged flow",
+        "facts": {
+          "boundary": {
+            "managed_interface": true,
+            "default_deny": true,
+            "flow_approved": true,
+            "flow_logged": true
+          }
+        },
+        "expected": "allow",
+        "explanation": "The flow crosses a managed default-deny boundary, is approved, and is logged.",
+        "matchedClause": "allow"
+      },
+      {
+        "id": "boundary-unapproved-flow",
+        "name": "Managed interface with unapproved flow",
+        "facts": {
+          "boundary": {
+            "managed_interface": true,
+            "default_deny": true,
+            "flow_approved": false,
+            "flow_logged": true
+          }
+        },
+        "expected": "deny",
+        "explanation": "Logging alone does not authorize an unapproved communication flow.",
+        "matchedClause": "deny contains msg if flow not approved"
+      }
+    ]
+  },
+  {
+    "familyId": "flaw-remediation",
+    "scenarios": [
+      {
+        "id": "finding-critical-remediated",
+        "name": "Critical finding remediated within SLA",
+        "facts": {
+          "finding": {
+            "tracked": true,
+            "severity": "critical",
+            "age_days": 7,
+            "remediated": true,
+            "approved_exception": false
+          }
+        },
+        "expected": "allow",
+        "explanation": "The critical finding was tracked and remediated within the 15-day SLA.",
+        "matchedClause": "allow.critical_remediated"
+      },
+      {
+        "id": "finding-critical-overdue",
+        "name": "Critical finding past SLA without exception",
+        "facts": {
+          "finding": {
+            "tracked": true,
+            "severity": "critical",
+            "age_days": 21,
+            "remediated": false,
+            "approved_exception": false
+          }
+        },
+        "expected": "deny",
+        "explanation": "Critical flaws older than 15 days fail without remediation or an approved exception.",
+        "matchedClause": "deny contains msg if critical SLA exceeded"
       }
     ]
   }

@@ -21,12 +21,13 @@ describe("generator", () => {
       random: () => 0.5,
     });
 
-    expect(drill.control.id).toBe("IAC-01");
     expect(drill.category.id).toBe(drill.control.categoryId);
     expect(
       drill.control.frameworkId === "scf" ||
         drill.control.relatedFrameworkIds?.includes("scf"),
     ).toBe(true);
+    expect(drill.statement.length).toBeGreaterThan(20);
+    expect(drill.rego).toContain("import rego.v1");
   });
 
   it("throws when category mode is missing a category", () => {
@@ -61,5 +62,29 @@ describe("generator", () => {
 
   it("returns empty control list for impossible filters", () => {
     expect(listControlsForSelection(["nist-800-53"], "__none__")).toEqual([]);
+  });
+
+  it("generates NIST drills for configuration management and system integrity", () => {
+    for (const categoryId of ["configuration-management", "system-integrity"]) {
+      const drill = generateDrill({
+        frameworkIds: ["nist-800-53"],
+        mode: "category",
+        categoryId,
+        now: new Date("2026-08-04T12:00:00Z"),
+        random: () => 0,
+      });
+      expect(drill.control.frameworkId).toBe("nist-800-53");
+      expect(drill.control.categoryId).toBe(categoryId);
+      expect(drill.rego).toContain("import rego.v1");
+      expect(drill.scenarios.length).toBeGreaterThanOrEqual(2);
+    }
+  });
+
+  it("lists multiple primary NIST controls for access control", () => {
+    const pool = listControlsForSelection(["nist-800-53"], "access-control");
+    const primary = pool.filter((c) => c.frameworkId === "nist-800-53");
+    expect(primary.map((c) => c.id).sort()).toEqual(
+      expect.arrayContaining(["AC-2", "AC-3"]),
+    );
   });
 });

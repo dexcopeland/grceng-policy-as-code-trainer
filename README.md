@@ -8,7 +8,7 @@ The implementation uses Vite, React, TypeScript, Tailwind CSS, shadcn/ui-style c
 
 The trainer includes lightweight sample coverage for:
 
-- NIST SP 800-53
+- NIST SP 800-53 (AC, AU, CM, IA, SC, and SI family samples)
 - Secure Controls Framework (SCF)
 - CIS Controls
 - SOC 2 Trust Services Criteria

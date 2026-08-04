@@ -11,6 +11,72 @@
     "fixtureFamilyId": "account-management"
   },
   {
+    "id": "AC-3",
+    "frameworkId": "nist-800-53",
+    "categoryId": "access-control",
+    "title": "Access Enforcement",
+    "objective": "Enforce approved authorizations for logical access to information and system resources.",
+    "keywords": ["authorization", "least privilege", "role"],
+    "relatedFrameworkIds": ["cmmc", "scf"],
+    "templateId": "access-enforcement",
+    "fixtureFamilyId": "access-enforcement"
+  },
+  {
+    "id": "AU-12",
+    "frameworkId": "nist-800-53",
+    "categoryId": "audit-accountability",
+    "title": "Audit Record Generation",
+    "objective": "Generate audit records for auditable events with content needed for investigation and accountability.",
+    "keywords": ["audit records", "logging", "events"],
+    "relatedFrameworkIds": ["cis", "fedramp-rev5", "soc2"],
+    "templateId": "logging",
+    "fixtureFamilyId": "logging"
+  },
+  {
+    "id": "CM-2",
+    "frameworkId": "nist-800-53",
+    "categoryId": "configuration-management",
+    "title": "Baseline Configuration",
+    "objective": "Develop, document, and maintain under configuration control a current baseline configuration of the system.",
+    "keywords": ["baseline", "hardening", "drift"],
+    "relatedFrameworkIds": ["cis", "fedramp-rev5", "fedramp-20x"],
+    "templateId": "config-baseline",
+    "fixtureFamilyId": "config-baseline"
+  },
+  {
+    "id": "IA-2",
+    "frameworkId": "nist-800-53",
+    "categoryId": "identification-authentication",
+    "title": "Identification and Authentication (Organizational Users)",
+    "objective": "Uniquely identify and authenticate organizational users and associate authentication with authorized accounts.",
+    "keywords": ["authentication", "mfa", "identity"],
+    "relatedFrameworkIds": ["cmmc", "fedramp-rev5", "scf"],
+    "templateId": "authentication",
+    "fixtureFamilyId": "authentication"
+  },
+  {
+    "id": "SC-7",
+    "frameworkId": "nist-800-53",
+    "categoryId": "system-communications",
+    "title": "Boundary Protection",
+    "objective": "Monitor and control communications at external and key internal managed interfaces.",
+    "keywords": ["boundary", "firewall", "ingress", "egress"],
+    "relatedFrameworkIds": ["cis", "cmmc", "fedramp-rev5"],
+    "templateId": "boundary-protection",
+    "fixtureFamilyId": "boundary-protection"
+  },
+  {
+    "id": "SI-2",
+    "frameworkId": "nist-800-53",
+    "categoryId": "system-integrity",
+    "title": "Flaw Remediation",
+    "objective": "Identify, report, and correct system flaws in a timely manner, including installing security-relevant updates.",
+    "keywords": ["patching", "vulnerabilities", "remediation"],
+    "relatedFrameworkIds": ["cis", "soc2", "fedramp-rev5"],
+    "templateId": "flaw-remediation",
+    "fixtureFamilyId": "flaw-remediation"
+  },
+  {
     "id": "IAC-01",
     "frameworkId": "scf",
     "categoryId": "identity-access",
