@@ -94,8 +94,8 @@ export function CategoryBrowse({
           <EmptyHeader>
             <EmptyTitle>No matching categories</EmptyTitle>
             <EmptyDescription>
-              The selected framework combination does not have mapped
-              categories yet.
+              This framework/category combination does not have mapped controls
+              yet. Try Random mode or select a different framework set.
             </EmptyDescription>
           </EmptyHeader>
         </Empty>

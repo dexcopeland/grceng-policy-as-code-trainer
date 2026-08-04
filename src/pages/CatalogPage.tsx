@@ -30,6 +30,12 @@ export function CatalogPage({ onStartDrill }: CatalogPageProps) {
   const canStart =
     selection.frameworkIds.length > 0 &&
     (selection.mode === "random" || Boolean(selection.categoryId));
+  const startHelperText =
+    selection.frameworkIds.length === 0
+      ? "Select at least one framework before starting a drill."
+      : selection.mode === "category" && !selection.categoryId
+        ? "Choose a category or switch back to Random mode to start."
+        : "Start Drill creates a generated exercise from your current selection.";
 
   useEffect(() => {
     if (
@@ -91,9 +97,8 @@ export function CatalogPage({ onStartDrill }: CatalogPageProps) {
                 <h2 className="text-lg font-semibold text-primary">
                   Ready to practice?
                 </h2>
-                <p className="text-sm text-muted-foreground">
-                  Start Drill creates a generated exercise from your current
-                  selection.
+                <p className="text-sm text-muted-foreground" aria-live="polite">
+                  {startHelperText}
                 </p>
               </div>
               <Button
