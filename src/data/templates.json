@@ -23,6 +23,18 @@
         "choices": ["A named owner", "A disabled MFA setting", "No review history", "A shared password"],
         "correctIndex": 0,
         "explanation": "The policy allows active accounts only when an owner is present and the review is current."
+      },
+      {
+        "question": "What review timing does the account-management rule require?",
+        "choices": ["At least every 30 days", "Within 90 days", "Only during onboarding", "After termination"],
+        "correctIndex": 1,
+        "explanation": "The sample Rego denies active accounts when the last review is older than 90 days."
+      },
+      {
+        "question": "Why does the missing-owner scenario fail?",
+        "choices": ["The account is inactive", "The review is too recent", "The active account lacks an accountable owner", "The control ID is unknown"],
+        "correctIndex": 2,
+        "explanation": "Active accounts must map to a named owner or accountable team to satisfy the policy."
       }
     ]
   },
@@ -50,6 +62,18 @@
         "choices": ["Enabled alerting", "Retaining logs for 365 days", "Disabled log collection", "Documented log sources"],
         "correctIndex": 2,
         "explanation": "The policy denies when logging is disabled or retention is below the minimum threshold."
+      },
+      {
+        "question": "Which retention period satisfies the logging rule?",
+        "choices": ["30 days", "90 days", "179 days", "365 days"],
+        "correctIndex": 3,
+        "explanation": "The rule allows logging evidence when retained audit data meets or exceeds 180 days."
+      },
+      {
+        "question": "Which evidence best supports alertability?",
+        "choices": ["Alert routing configuration", "A user onboarding form", "An exception register only", "A password reset ticket"],
+        "correctIndex": 0,
+        "explanation": "Alert routing configuration shows that collected logs can drive monitoring response."
       }
     ]
   },
@@ -77,6 +101,18 @@
         "choices": ["When logging is disabled", "When an approved exception exists", "When no baseline exists", "When the asset is unmanaged"],
         "correctIndex": 1,
         "explanation": "The sample Rego permits drift only when an approved exception is present."
+      },
+      {
+        "question": "What baseline fact is required before drift can be evaluated?",
+        "choices": ["A baseline_id", "A shared account", "An unapproved change", "A disabled scanner"],
+        "correctIndex": 0,
+        "explanation": "The rule denies assets that do not identify an approved baseline."
+      },
+      {
+        "question": "Which scenario should deny under the baseline policy?",
+        "choices": ["No drift with a baseline", "Approved exception with drift", "Unapproved drift with a baseline", "Current access review"],
+        "correctIndex": 2,
+        "explanation": "Unapproved drift violates the baseline rule unless a documented exception exists."
       }
     ]
   }
