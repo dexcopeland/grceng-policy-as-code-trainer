@@ -47,8 +47,11 @@ export function EvaluatePanel({ drill }: EvaluatePanelProps) {
         </p>
       </div>
       <Separator />
-      <div className="grid gap-4 lg:grid-cols-[minmax(0,18rem)_1fr]">
-        <div className="flex flex-col gap-3" aria-label="Scenario choices">
+      <div className="grid min-w-0 gap-4 lg:grid-cols-[minmax(0,16rem)_minmax(0,1fr)]">
+        <div
+          className="flex min-w-0 flex-col gap-3"
+          aria-label="Scenario choices"
+        >
           {drill.scenarios.map((scenario) => {
             const selected = scenario.id === selectedScenario?.id;
             return (
@@ -58,13 +61,13 @@ export function EvaluatePanel({ drill }: EvaluatePanelProps) {
                 variant="outline"
                 aria-pressed={selected}
                 onClick={() => handleSelectScenario(scenario.id)}
-                className="h-auto justify-start rounded-xl border-border bg-background/40 p-4 text-left hover:border-primary/70 hover:bg-primary/5 aria-pressed:border-primary aria-pressed:bg-primary/10"
+                className="h-auto w-full min-w-0 shrink justify-start overflow-hidden rounded-xl border-border bg-background/40 p-4 text-left whitespace-normal hover:border-primary/70 hover:bg-primary/5 aria-pressed:border-primary aria-pressed:bg-primary/10"
               >
-                <span className="flex flex-col gap-2">
-                  <span className="font-semibold text-foreground">
+                <span className="flex min-w-0 flex-col gap-2">
+                  <span className="break-words font-semibold text-foreground">
                     {scenario.name}
                   </span>
-                  <span className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
+                  <span className="text-xs leading-5 text-muted-foreground uppercase tracking-[0.16em]">
                     Expected output hidden until you answer
                   </span>
                 </span>
@@ -74,14 +77,18 @@ export function EvaluatePanel({ drill }: EvaluatePanelProps) {
         </div>
 
         {selectedScenario ? (
-          <div className="flex min-w-0 flex-col gap-4 rounded-xl border border-border bg-background/40 p-4">
-            <div className="flex flex-col gap-2">
-              <h3 className="text-lg font-semibold text-primary">
+          <div className="flex min-w-0 flex-col gap-4 overflow-hidden rounded-xl border border-border bg-background/40 p-4">
+            <div className="flex min-w-0 flex-col gap-2">
+              <h3 className="break-words text-lg font-semibold text-primary">
                 {selectedScenario.name}
               </h3>
-              <pre className="code-surface max-h-64 overflow-auto rounded-lg border border-primary/30 p-3 text-xs leading-6">
-                <code>{JSON.stringify(selectedScenario.facts, null, 2)}</code>
-              </pre>
+              <div className="min-w-0 overflow-x-auto rounded-lg border border-primary/30">
+                <pre className="code-surface m-0 w-max max-w-full p-3 text-xs leading-6">
+                  <code>
+                    {JSON.stringify(selectedScenario.facts, null, 2)}
+                  </code>
+                </pre>
+              </div>
             </div>
             <div className="flex flex-wrap gap-3" aria-label="Evaluation answer">
               <Button
