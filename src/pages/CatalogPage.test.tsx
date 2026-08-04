@@ -30,6 +30,26 @@ describe("CatalogPage", () => {
     ).toBeInTheDocument();
   });
 
+  it("disables categories with no controls for the selected framework", async () => {
+    const onStart = vi.fn();
+    render(<CatalogPage onStartDrill={onStart} />);
+
+    await userEvent.click(screen.getByRole("checkbox", { name: /nist/i }));
+    await userEvent.click(
+      screen.getByRole("button", { name: /select category/i }),
+    );
+
+    const emptyCategory = screen.getByRole("button", {
+      name: /configuration management/i,
+    });
+    expect(emptyCategory).toBeDisabled();
+    expect(emptyCategory).toHaveAttribute("aria-disabled", "true");
+
+    await userEvent.click(emptyCategory);
+    expect(screen.getByRole("button", { name: /start drill/i })).toBeDisabled();
+    expect(onStart).not.toHaveBeenCalled();
+  });
+
   it("clears stored progress from the progress strip", async () => {
     saveDrillProgress({
       controlId: "AC-2",

@@ -7,7 +7,6 @@ export interface ProgressState {
     controlId: string;
     title: string;
     frameworkIds: FrameworkId[];
-    score?: number;
     at: string;
   }>;
   quizScores: Array<{

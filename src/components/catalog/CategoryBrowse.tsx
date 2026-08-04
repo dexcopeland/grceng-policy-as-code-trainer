@@ -126,15 +126,18 @@ export function CategoryBrowse({
                   category.id,
                 );
                 const selected = category.id === categoryId;
+                const disabled = categoryControls.length === 0;
 
                 return (
                   <Button
                     key={category.id}
                     type="button"
                     variant="outline"
-                    aria-pressed={selected}
+                    aria-disabled={disabled}
+                    aria-pressed={selected && !disabled}
+                    disabled={disabled}
                     onClick={() => onCategoryChange(category.id)}
-                    className="h-auto justify-start rounded-xl border-border bg-background/40 p-4 text-left hover:border-primary/70 hover:bg-primary/5 aria-pressed:border-primary aria-pressed:bg-primary/10"
+                    className="h-auto justify-start rounded-xl border-border bg-background/40 p-4 text-left hover:border-primary/70 hover:bg-primary/5 disabled:cursor-not-allowed disabled:opacity-60 aria-pressed:border-primary aria-pressed:bg-primary/10"
                   >
                     <span className="flex w-full flex-col gap-3">
                       <span className="font-semibold text-foreground">

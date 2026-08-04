@@ -1,7 +1,7 @@
 [
   {
     "id": "account-management",
-    "statementTemplate": "{{title}} requires teams to {{objective}} Evidence for {{controlId}} must show active accounts have owners and recent access reviews.",
+    "statementTemplate": "{{title}}. {{objective}} Evidence for {{controlId}} must show active accounts have owners and recent access reviews.",
     "regoTemplate": "package {{packageName}}\n\ndefault allow = false\n\nallow {\n  input.account.active\n  input.account.owner\n  input.account.last_review_days <= 90\n}\n\ndeny[msg] {\n  input.account.active\n  not input.account.owner\n  msg := \"{{controlId}}: active account missing owner\"\n}\n\ndeny[msg] {\n  input.account.last_review_days > 90\n  msg := \"{{controlId}}: access review is stale\"\n}\n",
     "annotations": [
       {
@@ -40,7 +40,7 @@
   },
   {
     "id": "logging",
-    "statementTemplate": "{{title}} requires teams to {{objective}} Evidence for {{controlId}} must show logging is enabled, retained, and alertable.",
+    "statementTemplate": "{{title}}. {{objective}} Evidence for {{controlId}} must show logging is enabled, retained, and alertable.",
     "regoTemplate": "package {{packageName}}\n\ndefault allow = false\n\nallow {\n  input.logging.enabled\n  input.logging.retention_days >= 180\n  input.logging.alerting\n}\n\ndeny[msg] {\n  not input.logging.enabled\n  msg := \"{{controlId}}: logging is disabled\"\n}\n\ndeny[msg] {\n  input.logging.retention_days < 180\n  msg := \"{{controlId}}: log retention is below minimum\"\n}\n",
     "annotations": [
       {
@@ -79,7 +79,7 @@
   },
   {
     "id": "config-baseline",
-    "statementTemplate": "{{title}} requires teams to {{objective}} Evidence for {{controlId}} must show assets match an approved baseline or have an approved exception.",
+    "statementTemplate": "{{title}}. {{objective}} Evidence for {{controlId}} must show assets match an approved baseline or have an approved exception.",
     "regoTemplate": "package {{packageName}}\n\ndefault allow = false\n\nallow {\n  input.asset.baseline_id\n  input.asset.drift_count == 0\n}\n\nallow {\n  input.asset.baseline_id\n  input.asset.approved_exception\n}\n\ndeny[msg] {\n  not input.asset.baseline_id\n  msg := \"{{controlId}}: asset missing approved baseline\"\n}\n\ndeny[msg] {\n  input.asset.drift_count > 0\n  not input.asset.approved_exception\n  msg := \"{{controlId}}: unapproved configuration drift detected\"\n}\n",
     "annotations": [
       {

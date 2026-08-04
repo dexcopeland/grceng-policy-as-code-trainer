@@ -11,7 +11,11 @@ import {
 import { Button } from "@/components/ui/button";
 import { useDrillSelection } from "@/hooks/useDrillSelection";
 import { useProgress } from "@/hooks/useProgress";
-import { generateDrill, listCategoriesForFrameworks } from "@/lib/generator";
+import {
+  generateDrill,
+  listCategoriesForFrameworks,
+  listControlsForSelection,
+} from "@/lib/generator";
 import type { Drill } from "@/types/domain";
 
 interface CatalogPageProps {
@@ -27,9 +31,21 @@ export function CatalogPage({ onStartDrill }: CatalogPageProps) {
     () => listCategoriesForFrameworks(selection.frameworkIds),
     [selection.frameworkIds],
   );
+  const selectedCategoryControls = useMemo(
+    () =>
+      selection.mode === "category" && selection.categoryId
+        ? listControlsForSelection(selection.frameworkIds, selection.categoryId)
+        : [],
+    [selection.categoryId, selection.frameworkIds, selection.mode],
+  );
+  const randomControls = useMemo(
+    () => listControlsForSelection(selection.frameworkIds),
+    [selection.frameworkIds],
+  );
   const canStart =
-    selection.frameworkIds.length > 0 &&
-    (selection.mode === "random" || Boolean(selection.categoryId));
+    selection.mode === "random"
+      ? randomControls.length > 0
+      : selectedCategoryControls.length > 0;
   const startHelperText =
     selection.frameworkIds.length === 0
       ? "Select at least one framework before starting a drill."
@@ -40,7 +56,11 @@ export function CatalogPage({ onStartDrill }: CatalogPageProps) {
   useEffect(() => {
     if (
       selection.categoryId &&
-      !categories.some((category) => category.id === selection.categoryId)
+      (!categories.some((category) => category.id === selection.categoryId) ||
+        listControlsForSelection(
+          selection.frameworkIds,
+          selection.categoryId,
+        ).length === 0)
     ) {
       selection.setCategoryId(undefined);
     }
