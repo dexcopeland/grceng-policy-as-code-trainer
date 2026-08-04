@@ -74,7 +74,7 @@ Deploy: GitHub Actions builds `dist/` and publishes to GitHub Pages with repo `b
 - Brand-forward header: **Policy-as-Code Trainer**
 - Left sidebar: multi-select frameworks
 - Right pane: categories (and control summaries) filtered by selection
-- Mode: **Random** or **Select category**
+- Mode: **Random** (pick a random in-scope control) or **Select category** (user picks a category, then a control in that category)
 - Primary action: open / start drill
 - Compact recent drills + progress summary
 
