@@ -82,8 +82,8 @@ export function EvaluatePanel({ drill }: EvaluatePanelProps) {
               <h3 className="break-words text-lg font-semibold text-primary">
                 {selectedScenario.name}
               </h3>
-              <div className="min-w-0 overflow-x-auto rounded-lg border border-primary/30">
-                <pre className="code-surface m-0 w-max max-w-full p-3 text-xs leading-6">
+              <div className="code-surface min-w-0 overflow-x-auto rounded-lg border border-primary/30">
+                <pre className="m-0 w-max min-w-full p-3 text-xs leading-6">
                   <code>
                     {JSON.stringify(selectedScenario.facts, null, 2)}
                   </code>
