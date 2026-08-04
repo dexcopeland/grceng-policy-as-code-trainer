@@ -7,7 +7,7 @@ const scenarios = [
     facts: { account: { active: true, owner: null } },
     expected: "deny" as const,
     explanation: "Active accounts require an owner.",
-    matchedClause: "deny[msg] when active and not owner",
+    matchedClause: "deny contains msg if active and not owner",
   },
 ];
 

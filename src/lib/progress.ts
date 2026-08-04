@@ -44,6 +44,43 @@ function resolveStorage(storage?: Storage): Storage | undefined {
   }
 }
 
+function isFrameworkId(value: unknown): value is FrameworkId {
+  return typeof value === "string" && value.length > 0;
+}
+
+function isRecentDrill(
+  value: unknown,
+): value is ProgressState["recentDrills"][number] {
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
+    return false;
+  }
+
+  const record = value as Record<string, unknown>;
+  return (
+    typeof record.controlId === "string" &&
+    typeof record.title === "string" &&
+    Array.isArray(record.frameworkIds) &&
+    record.frameworkIds.every(isFrameworkId) &&
+    typeof record.at === "string"
+  );
+}
+
+function isQuizScore(
+  value: unknown,
+): value is ProgressState["quizScores"][number] {
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
+    return false;
+  }
+
+  const record = value as Record<string, unknown>;
+  return (
+    typeof record.controlId === "string" &&
+    typeof record.score === "number" &&
+    typeof record.total === "number" &&
+    typeof record.at === "string"
+  );
+}
+
 function normalizeProgress(value: unknown): ProgressState {
   if (!value || typeof value !== "object" || Array.isArray(value)) {
     return emptyProgress();
@@ -52,13 +89,13 @@ function normalizeProgress(value: unknown): ProgressState {
   const record = value as Record<string, unknown>;
   return {
     recentDrills: Array.isArray(record.recentDrills)
-      ? (record.recentDrills as ProgressState["recentDrills"])
+      ? record.recentDrills.filter(isRecentDrill)
       : [],
     quizScores: Array.isArray(record.quizScores)
-      ? (record.quizScores as ProgressState["quizScores"])
+      ? record.quizScores.filter(isQuizScore)
       : [],
     frameworksPracticed: Array.isArray(record.frameworksPracticed)
-      ? (record.frameworksPracticed as ProgressState["frameworksPracticed"])
+      ? record.frameworksPracticed.filter(isFrameworkId)
       : [],
   };
 }
@@ -66,7 +103,11 @@ function normalizeProgress(value: unknown): ProgressState {
 function writeProgress(state: ProgressState, storage?: Storage): ProgressState {
   const target = resolveStorage(storage);
   if (target) {
-    target.setItem(STORAGE_KEY, JSON.stringify(state));
+    try {
+      target.setItem(STORAGE_KEY, JSON.stringify(state));
+    } catch {
+      // Persistence is best-effort; drills/quizzes must still work offline.
+    }
   }
   return state;
 }
@@ -117,7 +158,11 @@ export function saveQuizScore(
 export function clearProgress(storage?: Storage): ProgressState {
   const target = resolveStorage(storage);
   if (target) {
-    target.removeItem(STORAGE_KEY);
+    try {
+      target.removeItem(STORAGE_KEY);
+    } catch {
+      // Best-effort clear; return empty in-memory state regardless.
+    }
   }
 
   return emptyProgress();

@@ -51,6 +51,9 @@ describe("generator", () => {
     expect(drill.control.categoryId).toBe(cats[0].id);
     expect(drill.statement.length).toBeGreaterThan(20);
     expect(drill.rego).toContain("package");
+    expect(drill.rego).toContain("import rego.v1");
+    expect(drill.rego).toMatch(/allow if \{/);
+    expect(drill.rego).toMatch(/deny contains msg if \{/);
     expect(drill.evidence.query).toMatch(/2026/);
     expect(drill.scenarios.length).toBeGreaterThanOrEqual(2);
     expect(drill.quiz.length).toBeGreaterThanOrEqual(3);
