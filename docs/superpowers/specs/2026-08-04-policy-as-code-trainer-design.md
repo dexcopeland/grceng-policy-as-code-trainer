@@ -109,16 +109,20 @@ Deploy: GitHub Actions builds `dist/` and publishes to GitHub Pages with repo `b
 
 - `id`, `frameworkId`, `categoryId`, `title`, `objective`, `keywords[]`
 - Optional `relatedFrameworkIds[]` for crosswalk display
+- `templateId` — key into `templates[]` for statement/Rego/evidence/quiz composition
+- `fixtureFamilyId` — key into `fixtures[]` for mock evaluation scenarios
 
 ### `templates`
 
-- Rego skeletons parameterized by control family
+- Identified by `id` (control family), referenced by `controls[].templateId`
+- Rego v1 skeletons (`import rego.v1`, `allow if`, `deny contains msg if`) parameterized by control family
 - Statement phrasing patterns
 - Evidence query patterns
 - Quiz stems
 
 ### `fixtures`
 
+- Identified by `familyId`, referenced by `controls[].fixtureFamilyId`
 - Canned evaluation inputs and expected allow/deny per control family
 - Short explanations for matched clauses
 

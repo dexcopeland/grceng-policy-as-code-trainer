@@ -27,7 +27,7 @@
         },
         "expected": "deny",
         "explanation": "The account is active but lacks an owner, so accountability is missing.",
-        "matchedClause": "deny.missing_owner"
+        "matchedClause": "deny contains msg if active and not owner"
       }
     ]
   },
@@ -60,7 +60,7 @@
         },
         "expected": "deny",
         "explanation": "Retention and alerting do not compensate for disabled log collection.",
-        "matchedClause": "deny.logging_disabled"
+        "matchedClause": "deny contains msg if logging disabled"
       }
     ]
   },
@@ -93,7 +93,7 @@
         },
         "expected": "deny",
         "explanation": "Detected drift must be remediated or covered by an approved exception.",
-        "matchedClause": "deny.unapproved_drift"
+        "matchedClause": "deny contains msg if unapproved drift"
       }
     ]
   }
