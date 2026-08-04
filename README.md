@@ -49,17 +49,26 @@ The Vite base path is configured as `/grceng-policy-as-code-trainer/` so built a
 
 The workflow in `.github/workflows/deploy.yml` builds, tests, uploads `dist/`, and deploys with GitHub Pages Actions.
 
+**Required before the first successful deploy:** GitHub Pages must be enabled for this repository. Until that is done, the `build` job can pass while `deploy` fails with `Failed to create deployment (status: 404)`.
+
 Repository setup:
 
-1. In GitHub, open **Settings > Pages**.
-2. Set **Source** to **GitHub Actions**.
-3. Push to `main` or run the **Deploy to GitHub Pages** workflow manually.
+1. In GitHub, open **Settings → Pages**: https://github.com/dexcopeland/grceng-policy-as-code-trainer/settings/pages
+2. Set **Source** to **GitHub Actions** (not “Deploy from a branch”).
+3. Re-run the failed **Deploy to GitHub Pages** workflow (Actions → failed run → **Re-run failed jobs**), or push to `main` / use **workflow_dispatch**.
 
 After deployment, the site is available at:
 
 ```text
-https://<user>.github.io/grceng-policy-as-code-trainer/
+https://dexcopeland.github.io/grceng-policy-as-code-trainer/
 ```
+
+### Troubleshooting
+
+| Symptom | Likely cause | Fix |
+| --- | --- | --- |
+| `deploy` fails with Pages `404` / “Ensure GitHub Pages has been enabled” | Pages site not created / source not set to GitHub Actions | Enable Pages as above, then re-run the workflow |
+| `build` fails on `npm test` / `npm run build` | App code or dependency issue | Reproduce locally with `npm ci && npm test && npm run build` |
 
 ## Design reference
 
