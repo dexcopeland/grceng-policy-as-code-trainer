@@ -67,7 +67,7 @@ describe("DrillPage", () => {
       within(quizPanel).getByRole("button", { name: /submit quiz/i }),
     );
 
-    expect(screen.getByText(/correct/i)).toBeInTheDocument();
+    expect(screen.getByText(/^correct$/i)).toBeInTheDocument();
     expect(loadProgress().quizScores).toEqual([
       expect.objectContaining({
         controlId: drill.control.id,
