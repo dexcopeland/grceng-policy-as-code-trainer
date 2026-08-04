@@ -8,6 +8,7 @@
     "paths": {
       "@/*": ["./src/*"]
     },
+    "resolveJsonModule": true,
     "allowArbitraryExtensions": true,
     "skipLibCheck": true,
 

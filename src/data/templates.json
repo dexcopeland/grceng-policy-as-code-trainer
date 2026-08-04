@@ -1,0 +1,83 @@
+[
+  {
+    "id": "account-management",
+    "statementTemplate": "{{title}} requires teams to {{objective}} Evidence for {{controlId}} must show active accounts have owners and recent access reviews.",
+    "regoTemplate": "package {{packageName}}\n\ndefault allow = false\n\nallow {\n  input.account.active\n  input.account.owner\n  input.account.last_review_days <= 90\n}\n\ndeny[msg] {\n  input.account.active\n  not input.account.owner\n  msg := \"{{controlId}}: active account missing owner\"\n}\n\ndeny[msg] {\n  input.account.last_review_days > 90\n  msg := \"{{controlId}}: access review is stale\"\n}\n",
+    "annotations": [
+      {
+        "label": "Owner required",
+        "detail": "Active accounts must resolve to a named owner or accountable service team."
+      },
+      {
+        "label": "Review freshness",
+        "detail": "Access reviews older than 90 days fail the sample policy."
+      }
+    ],
+    "evidence": {
+      "artifacts": ["identity export", "access review record", "account owner registry"],
+      "queryTemplate": "control_id={{controlId}} AND account_reviewed_at BETWEEN {{start}} AND {{end}}"
+    },
+    "quizSeeds": [
+      {
+        "question": "Which fact is required for an active account to pass this policy?",
+        "choices": ["A named owner", "A disabled MFA setting", "No review history", "A shared password"],
+        "correctIndex": 0,
+        "explanation": "The policy allows active accounts only when an owner is present and the review is current."
+      }
+    ]
+  },
+  {
+    "id": "logging",
+    "statementTemplate": "{{title}} requires teams to {{objective}} Evidence for {{controlId}} must show logging is enabled, retained, and alertable.",
+    "regoTemplate": "package {{packageName}}\n\ndefault allow = false\n\nallow {\n  input.logging.enabled\n  input.logging.retention_days >= 180\n  input.logging.alerting\n}\n\ndeny[msg] {\n  not input.logging.enabled\n  msg := \"{{controlId}}: logging is disabled\"\n}\n\ndeny[msg] {\n  input.logging.retention_days < 180\n  msg := \"{{controlId}}: log retention is below minimum\"\n}\n",
+    "annotations": [
+      {
+        "label": "Collection enabled",
+        "detail": "Audit sources must emit events before downstream monitoring can work."
+      },
+      {
+        "label": "Retention threshold",
+        "detail": "The training rule expects at least 180 days of retained audit data."
+      }
+    ],
+    "evidence": {
+      "artifacts": ["log source inventory", "retention policy", "alert routing configuration"],
+      "queryTemplate": "control_id={{controlId}} AND log_event_time BETWEEN {{start}} AND {{end}}"
+    },
+    "quizSeeds": [
+      {
+        "question": "What causes the logging policy to deny a scenario?",
+        "choices": ["Enabled alerting", "Retaining logs for 365 days", "Disabled log collection", "Documented log sources"],
+        "correctIndex": 2,
+        "explanation": "The policy denies when logging is disabled or retention is below the minimum threshold."
+      }
+    ]
+  },
+  {
+    "id": "config-baseline",
+    "statementTemplate": "{{title}} requires teams to {{objective}} Evidence for {{controlId}} must show assets match an approved baseline or have an approved exception.",
+    "regoTemplate": "package {{packageName}}\n\ndefault allow = false\n\nallow {\n  input.asset.baseline_id\n  input.asset.drift_count == 0\n}\n\nallow {\n  input.asset.baseline_id\n  input.asset.approved_exception\n}\n\ndeny[msg] {\n  not input.asset.baseline_id\n  msg := \"{{controlId}}: asset missing approved baseline\"\n}\n\ndeny[msg] {\n  input.asset.drift_count > 0\n  not input.asset.approved_exception\n  msg := \"{{controlId}}: unapproved configuration drift detected\"\n}\n",
+    "annotations": [
+      {
+        "label": "Approved baseline",
+        "detail": "Each asset needs a reference baseline to evaluate drift."
+      },
+      {
+        "label": "Exception handling",
+        "detail": "Documented exceptions can pass when drift is explicitly approved."
+      }
+    ],
+    "evidence": {
+      "artifacts": ["configuration scan", "baseline approval record", "exception register"],
+      "queryTemplate": "control_id={{controlId}} AND config_scan_time BETWEEN {{start}} AND {{end}}"
+    },
+    "quizSeeds": [
+      {
+        "question": "When can an asset with configuration drift pass the baseline policy?",
+        "choices": ["When logging is disabled", "When an approved exception exists", "When no baseline exists", "When the asset is unmanaged"],
+        "correctIndex": 1,
+        "explanation": "The sample Rego permits drift only when an approved exception is present."
+      }
+    ]
+  }
+]

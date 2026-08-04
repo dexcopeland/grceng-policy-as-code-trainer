@@ -1,0 +1,50 @@
+[
+  {
+    "id": "nist-800-53",
+    "name": "NIST SP 800-53",
+    "versionLabel": "Rev. 5",
+    "description": "Security and privacy controls for federal information systems and organizations."
+  },
+  {
+    "id": "scf",
+    "name": "Secure Controls Framework",
+    "versionLabel": "2025.2",
+    "description": "A crosswalk-friendly catalog of cybersecurity and privacy controls."
+  },
+  {
+    "id": "cis",
+    "name": "CIS Controls",
+    "versionLabel": "v8.1",
+    "description": "Prioritized safeguards for defending enterprise systems and data."
+  },
+  {
+    "id": "soc2",
+    "name": "SOC 2 Trust Services Criteria",
+    "versionLabel": "2022",
+    "description": "Criteria for evaluating controls relevant to security, availability, confidentiality, processing integrity, and privacy."
+  },
+  {
+    "id": "sox-itgc",
+    "name": "SOX IT General Controls",
+    "versionLabel": "ITGC",
+    "description": "Information technology controls supporting financial reporting systems."
+  },
+  {
+    "id": "fedramp-rev5",
+    "name": "FedRAMP",
+    "versionLabel": "Rev. 5",
+    "description": "Cloud service authorization requirements aligned to NIST SP 800-53 Rev. 5 baselines."
+  },
+  {
+    "id": "fedramp-20x",
+    "name": "FedRAMP 20x",
+    "versionLabel": "Pilot",
+    "description": "Automation-focused FedRAMP approach emphasizing machine-readable evidence and continuous validation."
+  },
+  {
+    "id": "cmmc",
+    "name": "Cybersecurity Maturity Model Certification",
+    "versionLabel": "2.0",
+    "description": "Defense industrial base cybersecurity model based on protection requirements for federal contract information and CUI."
+  }
+]
