@@ -13,6 +13,32 @@ describe("generator", () => {
     ).toThrow(/framework/i);
   });
 
+  it("generates a random drill when category metadata has control gaps", () => {
+    const drill = generateDrill({
+      frameworkIds: ["scf"],
+      mode: "random",
+      now: new Date("2026-08-04T12:00:00Z"),
+      random: () => 0.5,
+    });
+
+    expect(drill.control.id).toBe("IAC-01");
+    expect(drill.category.id).toBe(drill.control.categoryId);
+    expect(
+      drill.control.frameworkId === "scf" ||
+        drill.control.relatedFrameworkIds?.includes("scf"),
+    ).toBe(true);
+  });
+
+  it("throws when category mode is missing a category", () => {
+    expect(() =>
+      generateDrill({
+        frameworkIds: ["nist-800-53"],
+        mode: "category",
+        random: () => 0,
+      }),
+    ).toThrow(/category/i);
+  });
+
   it("generates a drill for a specific category", () => {
     const cats = listCategoriesForFrameworks(["nist-800-53"]);
     const drill = generateDrill({

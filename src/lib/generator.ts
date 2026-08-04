@@ -67,21 +67,25 @@ export function generateDrill(input: GenerateDrillInput): Drill {
     throw new Error("Select at least one framework");
   }
 
-  let categoryId = input.categoryId;
-  if (input.mode === "random" || !categoryId) {
-    const cats = listCategoriesForFrameworks(input.frameworkIds);
-    if (cats.length === 0) {
-      throw new Error("No categories for selected frameworks");
+  let control: Control;
+  if (input.mode === "random") {
+    const pool = listControlsForSelection(input.frameworkIds);
+    if (pool.length === 0) {
+      throw new Error("No controls for selected frameworks");
     }
-    categoryId = pick(cats, random).id;
+    control = pick(pool, random);
+  } else {
+    if (!input.categoryId) {
+      throw new Error("Select a category for category mode");
+    }
+
+    const pool = listControlsForSelection(input.frameworkIds, input.categoryId);
+    if (pool.length === 0) {
+      throw new Error("No controls in this combination");
+    }
+    control = pick(pool, random);
   }
 
-  const pool = listControlsForSelection(input.frameworkIds, categoryId);
-  if (pool.length === 0) {
-    throw new Error("No controls in this combination");
-  }
-
-  const control = pick(pool, random);
   const template = templates.find((t) => t.id === control.templateId);
   const fixture = fixtures.find((f) => f.familyId === control.fixtureFamilyId);
   const category = categories.find((c) => c.id === control.categoryId);
