@@ -34,7 +34,10 @@ describe("CatalogPage", () => {
     const onStart = vi.fn();
     render(<CatalogPage onStartDrill={onStart} />);
 
-    await userEvent.click(screen.getByRole("checkbox", { name: /nist/i }));
+    // SCF tags Configuration Management but has no primary/related control there.
+    await userEvent.click(
+      screen.getByRole("checkbox", { name: /secure controls framework/i }),
+    );
     await userEvent.click(
       screen.getByRole("button", { name: /select category/i }),
     );
@@ -48,6 +51,22 @@ describe("CatalogPage", () => {
     await userEvent.click(emptyCategory);
     expect(screen.getByRole("button", { name: /start drill/i })).toBeDisabled();
     expect(onStart).not.toHaveBeenCalled();
+  });
+
+  it("enables NIST configuration management once a primary control exists", async () => {
+    const onStart = vi.fn();
+    render(<CatalogPage onStartDrill={onStart} />);
+
+    await userEvent.click(screen.getByRole("checkbox", { name: /nist/i }));
+    await userEvent.click(
+      screen.getByRole("button", { name: /select category/i }),
+    );
+
+    const configCategory = screen.getByRole("button", {
+      name: /configuration management/i,
+    });
+    expect(configCategory).toBeEnabled();
+    expect(configCategory).not.toHaveAttribute("aria-disabled", "true");
   });
 
   it("clears stored progress from the progress strip", async () => {

@@ -39,6 +39,49 @@
     ]
   },
   {
+    "id": "access-enforcement",
+    "statementTemplate": "{{title}}. {{objective}} Evidence for {{controlId}} must show requested actions match an approved role and are within policy.",
+    "regoTemplate": "package {{packageName}}\n\nimport rego.v1\n\ndefault allow := false\n\nallow if {\n  input.request.authenticated\n  input.request.role_approved\n  input.request.action_allowed\n}\n\ndeny contains msg if {\n  not input.request.authenticated\n  msg := \"{{controlId}}: request is not authenticated\"\n}\n\ndeny contains msg if {\n  input.request.authenticated\n  not input.request.role_approved\n  msg := \"{{controlId}}: role is not approved for this resource\"\n}\n\ndeny contains msg if {\n  input.request.authenticated\n  input.request.role_approved\n  not input.request.action_allowed\n  msg := \"{{controlId}}: action exceeds approved authorization\"\n}\n",
+    "annotations": [
+      {
+        "label": "Authenticated subject",
+        "detail": "Access decisions start only after the caller is authenticated."
+      },
+      {
+        "label": "Approved role",
+        "detail": "The caller's role must be authorized for the target resource."
+      },
+      {
+        "label": "Action scope",
+        "detail": "Even approved roles fail when the requested action is outside policy."
+      }
+    ],
+    "evidence": {
+      "artifacts": ["authorization policy export", "role assignment report", "access decision log"],
+      "queryTemplate": "control_id={{controlId}} AND access_decision_time BETWEEN {{start}} AND {{end}}"
+    },
+    "quizSeeds": [
+      {
+        "question": "What must be true before an access request can pass enforcement?",
+        "choices": ["The caller is authenticated", "Logging is disabled", "No role is assigned", "The action is undefined"],
+        "correctIndex": 0,
+        "explanation": "The sample policy denies unauthenticated requests before evaluating role or action."
+      },
+      {
+        "question": "Why can an authenticated request still be denied?",
+        "choices": ["The role is approved and the action is allowed", "The role is not approved for the resource", "MFA is enabled", "Audit retention is long"],
+        "correctIndex": 1,
+        "explanation": "Access enforcement requires both an approved role and an allowed action."
+      },
+      {
+        "question": "Which evidence best supports access enforcement drills?",
+        "choices": ["Role assignment report", "A facility visitor log", "A printer toner invoice", "An unused VLAN diagram"],
+        "correctIndex": 0,
+        "explanation": "Role assignments show whether authorization mappings exist for the evaluated request."
+      }
+    ]
+  },
+  {
     "id": "logging",
     "statementTemplate": "{{title}}. {{objective}} Evidence for {{controlId}} must show logging is enabled, retained, and alertable.",
     "regoTemplate": "package {{packageName}}\n\nimport rego.v1\n\ndefault allow := false\n\nallow if {\n  input.logging.enabled\n  input.logging.retention_days >= 180\n  input.logging.alerting\n}\n\ndeny contains msg if {\n  not input.logging.enabled\n  msg := \"{{controlId}}: logging is disabled\"\n}\n\ndeny contains msg if {\n  input.logging.retention_days < 180\n  msg := \"{{controlId}}: log retention is below minimum\"\n}\n",
@@ -113,6 +156,174 @@
         "choices": ["No drift with a baseline", "Approved exception with drift", "Unapproved drift with a baseline", "Current access review"],
         "correctIndex": 2,
         "explanation": "Unapproved drift violates the baseline rule unless a documented exception exists."
+      }
+    ]
+  },
+  {
+    "id": "authentication",
+    "statementTemplate": "{{title}}. {{objective}} Evidence for {{controlId}} must show users authenticate with MFA and a unique identity.",
+    "regoTemplate": "package {{packageName}}\n\nimport rego.v1\n\ndefault allow := false\n\nallow if {\n  input.auth.unique_identity\n  input.auth.mfa_satisfied\n  input.auth.session_bound\n}\n\ndeny contains msg if {\n  not input.auth.unique_identity\n  msg := \"{{controlId}}: authentication is not bound to a unique identity\"\n}\n\ndeny contains msg if {\n  input.auth.unique_identity\n  not input.auth.mfa_satisfied\n  msg := \"{{controlId}}: multi-factor authentication was not satisfied\"\n}\n",
+    "annotations": [
+      {
+        "label": "Unique identity",
+        "detail": "Shared or anonymous credentials fail identification requirements."
+      },
+      {
+        "label": "MFA satisfied",
+        "detail": "Organizational users must complete multi-factor authentication."
+      }
+    ],
+    "evidence": {
+      "artifacts": ["IdP authentication report", "MFA enrollment export", "session binding policy"],
+      "queryTemplate": "control_id={{controlId}} AND auth_event_time BETWEEN {{start}} AND {{end}}"
+    },
+    "quizSeeds": [
+      {
+        "question": "Which condition fails when a shared login is used?",
+        "choices": ["unique_identity", "session_bound only", "log retention", "baseline_id"],
+        "correctIndex": 0,
+        "explanation": "Shared credentials are not bound to a unique organizational identity."
+      },
+      {
+        "question": "What additional check does the authentication policy require beyond identity?",
+        "choices": ["MFA satisfied", "Configuration drift", "Firewall deny-all", "Patch SLA"],
+        "correctIndex": 0,
+        "explanation": "The sample Rego requires multi-factor authentication for organizational users."
+      },
+      {
+        "question": "Which artifact best supports an authentication drill?",
+        "choices": ["IdP authentication report", "Cable plant drawing", "Desk assignment roster", "Marketing calendar"],
+        "correctIndex": 0,
+        "explanation": "IdP reports show whether unique identities completed MFA-backed sign-in."
+      }
+    ]
+  },
+  {
+    "id": "boundary-protection",
+    "statementTemplate": "{{title}}. {{objective}} Evidence for {{controlId}} must show managed interfaces deny unapproved flows and log allowed traffic.",
+    "regoTemplate": "package {{packageName}}\n\nimport rego.v1\n\ndefault allow := false\n\nallow if {\n  input.boundary.managed_interface\n  input.boundary.default_deny\n  input.boundary.flow_approved\n  input.boundary.flow_logged\n}\n\ndeny contains msg if {\n  not input.boundary.managed_interface\n  msg := \"{{controlId}}: traffic does not traverse a managed interface\"\n}\n\ndeny contains msg if {\n  input.boundary.managed_interface\n  not input.boundary.default_deny\n  msg := \"{{controlId}}: boundary lacks a default-deny posture\"\n}\n\ndeny contains msg if {\n  input.boundary.managed_interface\n  not input.boundary.flow_approved\n  msg := \"{{controlId}}: communication flow is not approved\"\n}\n",
+    "annotations": [
+      {
+        "label": "Managed interface",
+        "detail": "Boundary controls apply at monitored ingress and egress points."
+      },
+      {
+        "label": "Default deny",
+        "detail": "Unmanaged allow-all edges fail the sample policy."
+      },
+      {
+        "label": "Approved and logged",
+        "detail": "Permitted flows still need approval and logging."
+      }
+    ],
+    "evidence": {
+      "artifacts": ["firewall policy export", "network flow approval record", "boundary traffic logs"],
+      "queryTemplate": "control_id={{controlId}} AND boundary_flow_time BETWEEN {{start}} AND {{end}}"
+    },
+    "quizSeeds": [
+      {
+        "question": "What posture does the boundary policy require?",
+        "choices": ["Default deny", "Default allow", "No logging", "Open management ports"],
+        "correctIndex": 0,
+        "explanation": "The sample Rego denies interfaces that do not enforce default-deny."
+      },
+      {
+        "question": "Why can a managed interface still fail evaluation?",
+        "choices": ["The flow is approved and logged", "The communication flow is not approved", "MFA is enabled", "Retention exceeds 180 days"],
+        "correctIndex": 1,
+        "explanation": "Boundary protection requires approved flows in addition to a managed interface."
+      },
+      {
+        "question": "Which evidence supports boundary drills?",
+        "choices": ["Firewall policy export", "Badge printer toner log", "Shared mailbox ACL only", "Desk phone inventory"],
+        "correctIndex": 0,
+        "explanation": "Firewall policy exports show whether interfaces enforce approved communications."
+      }
+    ]
+  },
+  {
+    "id": "audit-record-generation",
+    "statementTemplate": "{{title}}. {{objective}} Evidence for {{controlId}} must show auditable events are defined and generate records with investigation-ready content.",
+    "regoTemplate": "package {{packageName}}\n\nimport rego.v1\n\ndefault allow := false\n\nallow if {\n  input.audit.events_defined\n  input.audit.records_generated\n  input.audit.content_complete\n}\n\ndeny contains msg if {\n  not input.audit.events_defined\n  msg := \"{{controlId}}: auditable events are not defined\"\n}\n\ndeny contains msg if {\n  input.audit.events_defined\n  not input.audit.records_generated\n  msg := \"{{controlId}}: audit records are not generated for defined events\"\n}\n\ndeny contains msg if {\n  input.audit.records_generated\n  not input.audit.content_complete\n  msg := \"{{controlId}}: audit record content is incomplete for investigation\"\n}\n",
+    "annotations": [
+      {
+        "label": "Events defined",
+        "detail": "The organization must identify which event types are auditable before generation can be verified."
+      },
+      {
+        "label": "Records generated",
+        "detail": "Defined events must actually produce audit records in the logging pipeline."
+      },
+      {
+        "label": "Content complete",
+        "detail": "Records need investigation-ready fields such as actor, action, and timestamp."
+      }
+    ],
+    "evidence": {
+      "artifacts": ["auditable event inventory", "sample audit records", "log schema / field mapping"],
+      "queryTemplate": "control_id={{controlId}} AND audit_record_time BETWEEN {{start}} AND {{end}}"
+    },
+    "quizSeeds": [
+      {
+        "question": "What must be true before AU-12-style record generation can pass?",
+        "choices": ["Auditable events are defined", "Retention is exactly 30 days", "Alerting is disabled", "No baseline exists"],
+        "correctIndex": 0,
+        "explanation": "Audit record generation starts from a defined set of auditable events."
+      },
+      {
+        "question": "Why can defined events still fail this policy?",
+        "choices": ["Records are generated with complete content", "Records are not generated for those events", "MFA is enabled", "Drift count is zero"],
+        "correctIndex": 1,
+        "explanation": "Defining events is insufficient unless the system actually generates audit records."
+      },
+      {
+        "question": "Which evidence best supports complete audit record content?",
+        "choices": ["Log schema / field mapping", "Cafeteria menu", "Desk assignment roster", "Brand style guide"],
+        "correctIndex": 0,
+        "explanation": "Field mappings show whether generated records include investigation-ready content."
+      }
+    ]
+  },
+  {
+    "id": "flaw-remediation",
+    "statementTemplate": "{{title}}. {{objective}} Evidence for {{controlId}} must show critical findings stay within remediation SLA or are covered by an approved exception.",
+    "regoTemplate": "package {{packageName}}\n\nimport rego.v1\n\ndefault allow := false\n\nallow if {\n  input.finding.tracked\n  input.finding.severity == \"critical\"\n  input.finding.age_days <= 15\n}\n\nallow if {\n  input.finding.tracked\n  input.finding.severity == \"critical\"\n  input.finding.approved_exception\n}\n\nallow if {\n  input.finding.tracked\n  input.finding.severity != \"critical\"\n  input.finding.age_days <= 30\n  input.finding.remediated\n}\n\ndeny contains msg if {\n  not input.finding.tracked\n  msg := \"{{controlId}}: vulnerability finding is not tracked\"\n}\n\ndeny contains msg if {\n  input.finding.severity == \"critical\"\n  input.finding.age_days > 15\n  not input.finding.remediated\n  not input.finding.approved_exception\n  msg := \"{{controlId}}: critical flaw exceeded remediation SLA\"\n}\n",
+    "annotations": [
+      {
+        "label": "Tracked findings",
+        "detail": "Flaws must appear in the vulnerability management system before remediation can be evidenced."
+      },
+      {
+        "label": "Critical SLA",
+        "detail": "Open critical findings may remain allowed while within 15 days; older unresolved findings fail unless excepted."
+      },
+      {
+        "label": "Approved exception",
+        "detail": "Documented risk acceptance can pass when remediation is delayed past the SLA."
+      }
+    ],
+    "evidence": {
+      "artifacts": ["vulnerability scan export", "patch deployment record", "exception / risk acceptance register"],
+      "queryTemplate": "control_id={{controlId}} AND finding_updated_at BETWEEN {{start}} AND {{end}}"
+    },
+    "quizSeeds": [
+      {
+        "question": "What happens to an untracked vulnerability finding?",
+        "choices": ["It is allowed", "It is denied", "It skips MFA", "It creates a baseline"],
+        "correctIndex": 1,
+        "explanation": "The sample policy denies findings that are not tracked in the remediation workflow."
+      },
+      {
+        "question": "How can a critical finding older than 15 days still pass?",
+        "choices": ["Disable scanning", "Use an approved exception", "Remove logging", "Share an admin password"],
+        "correctIndex": 1,
+        "explanation": "Approved exceptions cover delayed remediation when risk acceptance is documented."
+      },
+      {
+        "question": "Which artifact best supports flaw remediation evidence?",
+        "choices": ["Patch deployment record", "Cafeteria menu", "Office seating chart", "Brand style guide"],
+        "correctIndex": 0,
+        "explanation": "Patch deployment records show whether identified flaws were corrected."
       }
     ]
   }

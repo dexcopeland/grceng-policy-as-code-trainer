@@ -18,5 +18,20 @@
     "id": "identity-access",
     "name": "Identity and Access",
     "frameworkIds": ["scf", "cis", "soc2", "sox-itgc", "fedramp-20x", "cmmc"]
+  },
+  {
+    "id": "identification-authentication",
+    "name": "Identification and Authentication",
+    "frameworkIds": ["nist-800-53", "fedramp-rev5", "cmmc", "scf"]
+  },
+  {
+    "id": "system-communications",
+    "name": "System and Communications Protection",
+    "frameworkIds": ["nist-800-53", "fedramp-rev5", "cmmc", "cis"]
+  },
+  {
+    "id": "system-integrity",
+    "name": "System and Information Integrity",
+    "frameworkIds": ["nist-800-53", "fedramp-rev5", "cis", "soc2"]
   }
 ]

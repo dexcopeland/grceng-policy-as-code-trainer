@@ -32,6 +32,39 @@
     ]
   },
   {
+    "familyId": "access-enforcement",
+    "scenarios": [
+      {
+        "id": "access-approved-role-action",
+        "name": "Authenticated role with allowed action",
+        "facts": {
+          "request": {
+            "authenticated": true,
+            "role_approved": true,
+            "action_allowed": true
+          }
+        },
+        "expected": "allow",
+        "explanation": "The caller is authenticated, the role is approved, and the action is in policy.",
+        "matchedClause": "allow"
+      },
+      {
+        "id": "access-unapproved-role",
+        "name": "Authenticated caller with unapproved role",
+        "facts": {
+          "request": {
+            "authenticated": true,
+            "role_approved": false,
+            "action_allowed": true
+          }
+        },
+        "expected": "deny",
+        "explanation": "Authentication alone is insufficient when the role is not authorized for the resource.",
+        "matchedClause": "deny contains msg if role not approved"
+      }
+    ]
+  },
+  {
     "familyId": "logging",
     "scenarios": [
       {
@@ -94,6 +127,144 @@
         "expected": "deny",
         "explanation": "Detected drift must be remediated or covered by an approved exception.",
         "matchedClause": "deny contains msg if unapproved drift"
+      }
+    ]
+  },
+  {
+    "familyId": "authentication",
+    "scenarios": [
+      {
+        "id": "auth-unique-mfa-session",
+        "name": "Unique identity with MFA and bound session",
+        "facts": {
+          "auth": {
+            "unique_identity": true,
+            "mfa_satisfied": true,
+            "session_bound": true
+          }
+        },
+        "expected": "allow",
+        "explanation": "The user authenticated as a unique identity with MFA and a bound session.",
+        "matchedClause": "allow"
+      },
+      {
+        "id": "auth-missing-mfa",
+        "name": "Unique identity without MFA",
+        "facts": {
+          "auth": {
+            "unique_identity": true,
+            "mfa_satisfied": false,
+            "session_bound": true
+          }
+        },
+        "expected": "deny",
+        "explanation": "Organizational users must satisfy multi-factor authentication.",
+        "matchedClause": "deny contains msg if mfa not satisfied"
+      }
+    ]
+  },
+  {
+    "familyId": "boundary-protection",
+    "scenarios": [
+      {
+        "id": "boundary-approved-logged-flow",
+        "name": "Managed interface with approved logged flow",
+        "facts": {
+          "boundary": {
+            "managed_interface": true,
+            "default_deny": true,
+            "flow_approved": true,
+            "flow_logged": true
+          }
+        },
+        "expected": "allow",
+        "explanation": "The flow crosses a managed default-deny boundary, is approved, and is logged.",
+        "matchedClause": "allow"
+      },
+      {
+        "id": "boundary-unapproved-flow",
+        "name": "Managed interface with unapproved flow",
+        "facts": {
+          "boundary": {
+            "managed_interface": true,
+            "default_deny": true,
+            "flow_approved": false,
+            "flow_logged": true
+          }
+        },
+        "expected": "deny",
+        "explanation": "Logging alone does not authorize an unapproved communication flow.",
+        "matchedClause": "deny contains msg if flow not approved"
+      }
+    ]
+  },
+  {
+    "familyId": "audit-record-generation",
+    "scenarios": [
+      {
+        "id": "audit-records-complete",
+        "name": "Defined events generate complete records",
+        "facts": {
+          "audit": {
+            "events_defined": true,
+            "records_generated": true,
+            "content_complete": true
+          }
+        },
+        "expected": "allow",
+        "explanation": "Auditable events are defined and produce investigation-ready audit records.",
+        "matchedClause": "allow"
+      },
+      {
+        "id": "audit-records-missing-content",
+        "name": "Records generated with incomplete content",
+        "facts": {
+          "audit": {
+            "events_defined": true,
+            "records_generated": true,
+            "content_complete": false
+          }
+        },
+        "expected": "deny",
+        "explanation": "Generated records still fail when required investigation fields are missing.",
+        "matchedClause": "deny contains msg if content incomplete"
+      }
+    ]
+  },
+  {
+    "familyId": "flaw-remediation",
+    "scenarios": [
+      {
+        "id": "finding-critical-open-within-sla",
+        "name": "Open critical finding still within SLA",
+        "facts": {
+          "finding": {
+            "tracked": true,
+            "severity": "critical",
+            "age_days": 7,
+            "remediated": false,
+            "approved_exception": false
+          }
+        },
+        "expected": "allow",
+        "explanation": "A tracked critical finding remains allowed while it is still within the 15-day remediation window.",
+        "matchedClause": "allow.critical_within_sla"
+      },
+      {
+        "id": "finding-critical-overdue",
+        "name": "Critical finding past SLA without exception",
+        "facts": {
+          "finding": {
+            "tracked": true,
+            "severity": "critical",
+            "age_days": 21,
+            "remediated": false,
+            "approved_exception": false
+          }
+        },
+        "expected": "deny",
+        "explanation": "Critical flaws older than 15 days fail without remediation or an approved exception.",
+        "matchedClause": "deny contains msg if critical SLA exceeded"
       }
     ]
   }
