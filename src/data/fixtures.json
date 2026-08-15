@@ -267,5 +267,38 @@
         "matchedClause": "deny contains msg if critical SLA exceeded"
       }
     ]
+  },
+  {
+    "familyId": "subject-identification",
+    "scenarios": [
+      {
+        "id": "subjects-users-processes-devices",
+        "name": "Users, processes, and devices identified",
+        "facts": {
+          "subjects": {
+            "users_identified": true,
+            "processes_identified": true,
+            "devices_identified": true
+          }
+        },
+        "expected": "allow",
+        "explanation": "The inventory covers users, processes acting on their behalf, and devices.",
+        "matchedClause": "allow"
+      },
+      {
+        "id": "subjects-missing-processes",
+        "name": "Users and devices without process inventory",
+        "facts": {
+          "subjects": {
+            "users_identified": true,
+            "processes_identified": false,
+            "devices_identified": true
+          }
+        },
+        "expected": "deny",
+        "explanation": "Identifying users and devices is insufficient when processes acting on behalf of users are missing.",
+        "matchedClause": "deny contains msg if processes not identified"
+      }
+    ]
   }
 ]

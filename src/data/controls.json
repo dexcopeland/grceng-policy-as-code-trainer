@@ -193,7 +193,7 @@
     "title": "Continuous Identity Evidence",
     "objective": "Continuously validate that active accounts have accountable owners and current access reviews.",
     "keywords": ["continuous monitoring", "identity", "access review", "evidence"],
-    "relatedFrameworkIds": ["fedramp-rev5", "soc2"],
+    "relatedFrameworkIds": ["soc2"],
     "templateId": "account-management",
     "fixtureFamilyId": "account-management"
   },
@@ -213,10 +213,10 @@
     "frameworkId": "cmmc",
     "categoryId": "identity-access",
     "title": "Identify System Users",
-    "objective": "Identify information system users and associate user identities with accountable owners and current access reviews.",
-    "keywords": ["identify users", "identity", "access review"],
-    "relatedFrameworkIds": ["nist-800-53", "scf"],
-    "templateId": "account-management",
-    "fixtureFamilyId": "account-management"
+    "objective": "Identify information system users, processes acting on behalf of users, and devices.",
+    "keywords": ["identify users", "processes", "devices", "subjects"],
+    "relatedFrameworkIds": ["scf"],
+    "templateId": "subject-identification",
+    "fixtureFamilyId": "subject-identification"
   }
 ]

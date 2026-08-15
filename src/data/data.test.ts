@@ -168,7 +168,7 @@ describe("datasets", () => {
         id: "IA.L2-3.5.1",
         frameworkId: "cmmc",
         categoryId: "identity-access",
-        templateId: "account-management",
+        templateId: "subject-identification",
       },
     ];
 
@@ -190,6 +190,49 @@ describe("datasets", () => {
     const template = templates.find((t) => t.id === "access-enforcement");
     expect(template?.regoTemplate).toMatch(/role_approved|action_allowed/);
     expect(template?.regoTemplate).not.toMatch(/last_review_days/);
+  });
+
+  it("maps CMMC IA.L2-3.5.1 to subject-identification, not account-management", () => {
+    const control = controls.find((c) => c.id === "IA.L2-3.5.1");
+    expect(control?.templateId).toBe("subject-identification");
+    expect(control?.fixtureFamilyId).toBe("subject-identification");
+    expect(control?.objective.toLowerCase()).toMatch(/users/);
+    expect(control?.objective.toLowerCase()).toMatch(/processes/);
+    expect(control?.objective.toLowerCase()).toMatch(/devices/);
+
+    const template = templates.find((t) => t.id === "subject-identification");
+    expect(template).toBeDefined();
+    expect(template?.regoTemplate).toMatch(
+      /users_identified|processes_identified|devices_identified/,
+    );
+    expect(template?.regoTemplate).not.toMatch(/last_review_days/);
+    expect(template?.statementTemplate.toLowerCase()).toMatch(
+      /users|processes|devices/,
+    );
+
+    const fixture = fixtures.find((f) => f.familyId === "subject-identification");
+    expect(fixture?.scenarios.some((s) => s.expected === "allow")).toBe(true);
+    expect(fixture?.scenarios.some((s) => s.expected === "deny")).toBe(true);
+    const denyMissingProcesses = fixture?.scenarios.find(
+      (s) =>
+        (s.facts.subjects as { processes_identified?: boolean })
+          ?.processes_identified === false,
+    );
+    expect(denyMissingProcesses?.expected).toBe("deny");
+  });
+
+  it("keeps FR20X-IA-01 related frameworks tagged on identity-access", () => {
+    const control = controls.find((c) => c.id === "FR20X-IA-01");
+    const category = categories.find((c) => c.id === "identity-access");
+    expect(control).toBeDefined();
+    expect(category).toBeDefined();
+    expect(control?.relatedFrameworkIds ?? []).not.toContain("fedramp-rev5");
+    for (const frameworkId of control?.relatedFrameworkIds ?? []) {
+      expect(
+        category?.frameworkIds.includes(frameworkId),
+        `expected identity-access to tag related framework ${frameworkId}`,
+      ).toBe(true);
+    }
   });
 
   it("pairs every template with a fixture family and quiz seeds", () => {

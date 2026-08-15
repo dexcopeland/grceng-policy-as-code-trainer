@@ -143,4 +143,19 @@ describe("generator", () => {
       expect(drill.scenarios.length).toBeGreaterThanOrEqual(2);
     }
   });
+
+  it("generates a CMMC IA.L2-3.5.1 drill about subjects, not access reviews", () => {
+    const drill = generateDrill({
+      frameworkIds: ["cmmc"],
+      mode: "category",
+      categoryId: "identity-access",
+      now: new Date("2026-08-04T12:00:00Z"),
+      random: () => 0,
+    });
+
+    expect(drill.control.id).toBe("IA.L2-3.5.1");
+    expect(drill.rego).toMatch(/users_identified|processes_identified|devices_identified/);
+    expect(drill.rego).not.toMatch(/last_review_days/);
+    expect(drill.statement.toLowerCase()).toMatch(/users|processes|devices/);
+  });
 });
