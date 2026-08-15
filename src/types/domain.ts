@@ -69,6 +69,46 @@ export interface EvalFixture {
   }>;
 }
 
+export type FlowPlaneId = "control" | "data";
+export type FlowTopology =
+  | "request-time"
+  | "periodic-review"
+  | "state-collector";
+export type FlowDecision = "allow" | "deny";
+
+export interface FlowNode {
+  id: string;
+  label: string;
+  plane: FlowPlaneId;
+  software?: string;
+}
+
+export interface FlowEdge {
+  id: string;
+  from: string;
+  to: string;
+  kind: "control" | "data" | "decision";
+  label?: string;
+}
+
+export interface FlowStep {
+  id: string;
+  caption: string;
+  highlight: string[];
+  packet?: { from: string; to: string };
+  decision?: FlowDecision;
+  fixtureScenarioId?: string;
+}
+
+export interface PolicyFlow {
+  familyId: string;
+  topology: FlowTopology;
+  planes: Array<{ id: FlowPlaneId; label: string }>;
+  nodes: FlowNode[];
+  edges: FlowEdge[];
+  steps: FlowStep[];
+}
+
 export interface Drill {
   control: Control;
   frameworks: Framework[];
@@ -83,4 +123,5 @@ export interface Drill {
   };
   scenarios: EvalFixture["scenarios"];
   quiz: PolicyTemplate["quizSeeds"];
+  flow: PolicyFlow;
 }

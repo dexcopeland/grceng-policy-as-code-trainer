@@ -1,0 +1,546 @@
+[
+  {
+    "familyId": "access-enforcement",
+    "topology": "request-time",
+    "planes": [
+      { "id": "control", "label": "Control plane" },
+      { "id": "data", "label": "Data plane" }
+    ],
+    "nodes": [
+      { "id": "author", "label": "Policy author", "plane": "control" },
+      { "id": "rego", "label": "Rego", "plane": "control" },
+      { "id": "pdp", "label": "PDP / OPA", "plane": "control", "software": "OPA" },
+      { "id": "catalog", "label": "Role catalog", "plane": "control" },
+      { "id": "subject", "label": "User / service", "plane": "data", "software": "IdP / SSO" },
+      { "id": "app", "label": "App", "plane": "data", "software": "workload" },
+      { "id": "pep", "label": "PEP", "plane": "data", "software": "API gateway" },
+      { "id": "resource", "label": "Resource", "plane": "data" }
+    ],
+    "edges": [
+      { "id": "e-author-rego", "from": "author", "to": "rego", "kind": "control" },
+      { "id": "e-rego-pdp", "from": "rego", "to": "pdp", "kind": "control" },
+      { "id": "e-catalog-pdp", "from": "catalog", "to": "pdp", "kind": "control" },
+      { "id": "e-subject-app", "from": "subject", "to": "app", "kind": "data" },
+      { "id": "e-app-pep", "from": "app", "to": "pep", "kind": "data" },
+      { "id": "e-pep-resource", "from": "pep", "to": "resource", "kind": "data" },
+      { "id": "e-pep-pdp", "from": "pep", "to": "pdp", "kind": "decision", "label": "ask" },
+      { "id": "e-pdp-pep", "from": "pdp", "to": "pep", "kind": "decision", "label": "decide" }
+    ],
+    "steps": [
+      {
+        "id": "ae-1",
+        "caption": "Subject sends a request with role and action (`input.request.*`).",
+        "highlight": ["subject", "e-subject-app", "app"],
+        "packet": { "from": "subject", "to": "app" }
+      },
+      {
+        "id": "ae-2",
+        "caption": "PEP intercepts the request before it reaches the resource.",
+        "highlight": ["app", "e-app-pep", "pep"],
+        "packet": { "from": "app", "to": "pep" }
+      },
+      {
+        "id": "ae-3",
+        "caption": "PEP asks PDP with `input.request.*` facts.",
+        "highlight": ["pep", "e-pep-pdp", "pdp"],
+        "packet": { "from": "pep", "to": "pdp" }
+      },
+      {
+        "id": "ae-4",
+        "caption": "PDP evaluates `authenticated`, `role_approved`, and `action_allowed`.",
+        "highlight": ["pdp", "catalog", "rego"]
+      },
+      {
+        "id": "ae-allow",
+        "caption": "ALLOW stamp at the PEP: authenticated role with allowed action.",
+        "highlight": ["pdp", "e-pdp-pep", "pep", "e-pep-resource", "resource"],
+        "packet": { "from": "pdp", "to": "pep" },
+        "decision": "allow",
+        "fixtureScenarioId": "access-approved-role-action"
+      },
+      {
+        "id": "ae-deny",
+        "caption": "DENY stamp at the PEP: role is not approved for the resource.",
+        "highlight": ["pdp", "e-pdp-pep", "pep"],
+        "packet": { "from": "pdp", "to": "pep" },
+        "decision": "deny",
+        "fixtureScenarioId": "access-unapproved-role"
+      }
+    ]
+  },
+  {
+    "familyId": "authentication",
+    "topology": "request-time",
+    "planes": [
+      { "id": "control", "label": "Control plane" },
+      { "id": "data", "label": "Data plane" }
+    ],
+    "nodes": [
+      { "id": "author", "label": "Policy author", "plane": "control" },
+      { "id": "rego", "label": "Rego", "plane": "control" },
+      { "id": "pdp", "label": "PDP", "plane": "control", "software": "OPA" },
+      { "id": "mfa-policy", "label": "MFA policy", "plane": "control", "software": "MFA prompt" },
+      { "id": "user", "label": "User", "plane": "data" },
+      { "id": "pep", "label": "IdP (PEP)", "plane": "data", "software": "IdP" },
+      { "id": "session", "label": "Session / app", "plane": "data", "software": "session token" }
+    ],
+    "edges": [
+      { "id": "e-author-rego", "from": "author", "to": "rego", "kind": "control" },
+      { "id": "e-rego-pdp", "from": "rego", "to": "pdp", "kind": "control" },
+      { "id": "e-mfa-pdp", "from": "mfa-policy", "to": "pdp", "kind": "control" },
+      { "id": "e-user-pep", "from": "user", "to": "pep", "kind": "data" },
+      { "id": "e-pep-session", "from": "pep", "to": "session", "kind": "data" },
+      { "id": "e-pep-pdp", "from": "pep", "to": "pdp", "kind": "decision", "label": "ask" },
+      { "id": "e-pdp-pep", "from": "pdp", "to": "pep", "kind": "decision", "label": "decide" }
+    ],
+    "steps": [
+      {
+        "id": "auth-1",
+        "caption": "User presents identity at the IdP.",
+        "highlight": ["user", "e-user-pep", "pep"],
+        "packet": { "from": "user", "to": "pep" }
+      },
+      {
+        "id": "auth-2",
+        "caption": "IdP (PEP) asks PDP about unique identity, MFA, and session binding.",
+        "highlight": ["pep", "e-pep-pdp", "pdp"],
+        "packet": { "from": "pep", "to": "pdp" }
+      },
+      {
+        "id": "auth-3",
+        "caption": "PDP evaluates `unique_identity`, `mfa_satisfied`, and `session_bound`.",
+        "highlight": ["pdp", "mfa-policy", "rego"]
+      },
+      {
+        "id": "auth-allow",
+        "caption": "ALLOW: MFA-satisfied unique identity binds a session token.",
+        "highlight": ["pdp", "e-pdp-pep", "pep", "e-pep-session", "session"],
+        "packet": { "from": "pep", "to": "session" },
+        "decision": "allow",
+        "fixtureScenarioId": "auth-unique-mfa-session"
+      },
+      {
+        "id": "auth-deny",
+        "caption": "DENY: MFA is not satisfied, so no session is issued.",
+        "highlight": ["pdp", "e-pdp-pep", "pep"],
+        "packet": { "from": "pdp", "to": "pep" },
+        "decision": "deny",
+        "fixtureScenarioId": "auth-missing-mfa"
+      }
+    ]
+  },
+  {
+    "familyId": "boundary-protection",
+    "topology": "request-time",
+    "planes": [
+      { "id": "control", "label": "Control plane" },
+      { "id": "data", "label": "Data plane" }
+    ],
+    "nodes": [
+      { "id": "author", "label": "Policy author", "plane": "control" },
+      { "id": "rego", "label": "Rego", "plane": "control" },
+      { "id": "pdp", "label": "PDP", "plane": "control", "software": "OPA" },
+      { "id": "approvals", "label": "Flow approvals", "plane": "control" },
+      { "id": "endpoint", "label": "Endpoint", "plane": "data", "software": "host" },
+      { "id": "pep", "label": "Managed interface", "plane": "data", "software": "firewall / router" },
+      { "id": "destination", "label": "Destination", "plane": "data" },
+      { "id": "flow-log", "label": "Flow log", "plane": "data", "software": "flow log" }
+    ],
+    "edges": [
+      { "id": "e-author-rego", "from": "author", "to": "rego", "kind": "control" },
+      { "id": "e-rego-pdp", "from": "rego", "to": "pdp", "kind": "control" },
+      { "id": "e-approvals-pdp", "from": "approvals", "to": "pdp", "kind": "control" },
+      { "id": "e-endpoint-pep", "from": "endpoint", "to": "pep", "kind": "data" },
+      { "id": "e-pep-destination", "from": "pep", "to": "destination", "kind": "data" },
+      { "id": "e-pep-log", "from": "pep", "to": "flow-log", "kind": "data" },
+      { "id": "e-pep-pdp", "from": "pep", "to": "pdp", "kind": "decision", "label": "ask" },
+      { "id": "e-pdp-pep", "from": "pdp", "to": "pep", "kind": "decision", "label": "decide" }
+    ],
+    "steps": [
+      {
+        "id": "bp-1",
+        "caption": "Endpoint sends traffic toward a destination.",
+        "highlight": ["endpoint", "e-endpoint-pep", "pep"],
+        "packet": { "from": "endpoint", "to": "pep" }
+      },
+      {
+        "id": "bp-2",
+        "caption": "Managed interface (PEP / firewall) intercepts the flow.",
+        "highlight": ["pep"]
+      },
+      {
+        "id": "bp-3",
+        "caption": "PEP asks PDP about managed interface, default deny, approval, and logging.",
+        "highlight": ["pep", "e-pep-pdp", "pdp"],
+        "packet": { "from": "pep", "to": "pdp" }
+      },
+      {
+        "id": "bp-4",
+        "caption": "PDP evaluates `managed_interface`, `default_deny`, `flow_approved`, and `flow_logged`.",
+        "highlight": ["pdp", "approvals", "rego"]
+      },
+      {
+        "id": "bp-allow",
+        "caption": "ALLOW: approved flow is logged and forwarded to the destination.",
+        "highlight": ["pdp", "e-pdp-pep", "pep", "e-pep-destination", "destination", "flow-log"],
+        "packet": { "from": "pep", "to": "destination" },
+        "decision": "allow",
+        "fixtureScenarioId": "boundary-approved-logged-flow"
+      },
+      {
+        "id": "bp-deny",
+        "caption": "DENY: unapproved flow is blocked at the managed interface.",
+        "highlight": ["pdp", "e-pdp-pep", "pep"],
+        "packet": { "from": "pdp", "to": "pep" },
+        "decision": "deny",
+        "fixtureScenarioId": "boundary-unapproved-flow"
+      }
+    ]
+  },
+  {
+    "familyId": "account-management",
+    "topology": "periodic-review",
+    "planes": [
+      { "id": "control", "label": "Control plane" },
+      { "id": "data", "label": "Data plane" }
+    ],
+    "nodes": [
+      { "id": "review-rule", "label": "Review rule", "plane": "control" },
+      { "id": "pdp", "label": "PDP (batch)", "plane": "control", "software": "OPA" },
+      { "id": "idp-export", "label": "IdP export", "plane": "data", "software": "IdP" },
+      { "id": "review-job", "label": "Review job", "plane": "data", "software": "review workflow" },
+      { "id": "owner-register", "label": "Owner register", "plane": "data" }
+    ],
+    "edges": [
+      { "id": "e-rule-pdp", "from": "review-rule", "to": "pdp", "kind": "control" },
+      { "id": "e-export-job", "from": "idp-export", "to": "review-job", "kind": "data" },
+      { "id": "e-job-register", "from": "review-job", "to": "owner-register", "kind": "data" },
+      { "id": "e-job-pdp", "from": "review-job", "to": "pdp", "kind": "decision", "label": "score row" },
+      { "id": "e-pdp-job", "from": "pdp", "to": "review-job", "kind": "decision", "label": "decide" }
+    ],
+    "steps": [
+      {
+        "id": "am-1",
+        "caption": "IdP export produces an inventory row (not a live login).",
+        "highlight": ["idp-export", "e-export-job", "review-job"],
+        "packet": { "from": "idp-export", "to": "review-job" }
+      },
+      {
+        "id": "am-2",
+        "caption": "Review job asks the batch PDP with account facts.",
+        "highlight": ["review-job", "e-job-pdp", "pdp"],
+        "packet": { "from": "review-job", "to": "pdp" }
+      },
+      {
+        "id": "am-3",
+        "caption": "PDP evaluates `active`, `owner`, and `last_review_days`.",
+        "highlight": ["pdp", "review-rule"]
+      },
+      {
+        "id": "am-allow",
+        "caption": "ALLOW: owned account with a current review is written to the owner register.",
+        "highlight": ["pdp", "e-pdp-job", "review-job", "e-job-register", "owner-register"],
+        "packet": { "from": "review-job", "to": "owner-register" },
+        "decision": "allow",
+        "fixtureScenarioId": "account-owner-current-review"
+      },
+      {
+        "id": "am-deny",
+        "caption": "DENY: active account missing an owner fails the review job.",
+        "highlight": ["pdp", "e-pdp-job", "review-job"],
+        "packet": { "from": "pdp", "to": "review-job" },
+        "decision": "deny",
+        "fixtureScenarioId": "account-missing-owner"
+      }
+    ]
+  },
+  {
+    "familyId": "subject-identification",
+    "topology": "periodic-review",
+    "planes": [
+      { "id": "control", "label": "Control plane" },
+      { "id": "data", "label": "Data plane" }
+    ],
+    "nodes": [
+      { "id": "id-rule", "label": "Identification rule", "plane": "control" },
+      { "id": "pdp", "label": "PDP (batch)", "plane": "control", "software": "OPA" },
+      { "id": "idp", "label": "IdP inventory", "plane": "data", "software": "IdP" },
+      { "id": "process-inv", "label": "Process inventory", "plane": "data", "software": "HRIS / CMDB" },
+      { "id": "device-cmdb", "label": "Device CMDB", "plane": "data", "software": "CMDB" },
+      { "id": "id-job", "label": "Identification job", "plane": "data", "software": "inventory job" },
+      { "id": "subject-register", "label": "Subject register", "plane": "data" }
+    ],
+    "edges": [
+      { "id": "e-rule-pdp", "from": "id-rule", "to": "pdp", "kind": "control" },
+      { "id": "e-idp-job", "from": "idp", "to": "id-job", "kind": "data" },
+      { "id": "e-process-job", "from": "process-inv", "to": "id-job", "kind": "data" },
+      { "id": "e-device-job", "from": "device-cmdb", "to": "id-job", "kind": "data" },
+      { "id": "e-job-register", "from": "id-job", "to": "subject-register", "kind": "data" },
+      { "id": "e-job-pdp", "from": "id-job", "to": "pdp", "kind": "decision", "label": "score inventory" },
+      { "id": "e-pdp-job", "from": "pdp", "to": "id-job", "kind": "decision", "label": "decide" }
+    ],
+    "steps": [
+      {
+        "id": "si-1",
+        "caption": "IdP, process inventory, and device CMDB feed the identification job.",
+        "highlight": ["idp", "process-inv", "device-cmdb", "id-job"],
+        "packet": { "from": "idp", "to": "id-job" }
+      },
+      {
+        "id": "si-2",
+        "caption": "Identification job asks the batch PDP with subject coverage facts.",
+        "highlight": ["id-job", "e-job-pdp", "pdp"],
+        "packet": { "from": "id-job", "to": "pdp" }
+      },
+      {
+        "id": "si-3",
+        "caption": "PDP evaluates `users_identified`, `processes_identified`, and `devices_identified`.",
+        "highlight": ["pdp", "id-rule"]
+      },
+      {
+        "id": "si-allow",
+        "caption": "ALLOW: users, processes, and devices are identified into the subject register.",
+        "highlight": ["pdp", "e-pdp-job", "id-job", "e-job-register", "subject-register"],
+        "packet": { "from": "id-job", "to": "subject-register" },
+        "decision": "allow",
+        "fixtureScenarioId": "subjects-users-processes-devices"
+      },
+      {
+        "id": "si-deny",
+        "caption": "DENY: missing process identification fails the inventory pass.",
+        "highlight": ["pdp", "e-pdp-job", "id-job"],
+        "packet": { "from": "pdp", "to": "id-job" },
+        "decision": "deny",
+        "fixtureScenarioId": "subjects-missing-processes"
+      }
+    ]
+  },
+  {
+    "familyId": "config-baseline",
+    "topology": "state-collector",
+    "planes": [
+      { "id": "control", "label": "Control plane" },
+      { "id": "data", "label": "Data plane" }
+    ],
+    "nodes": [
+      { "id": "baseline-policy", "label": "Baseline policy", "plane": "control" },
+      { "id": "pdp", "label": "PDP", "plane": "control", "software": "OPA" },
+      { "id": "asset", "label": "Asset", "plane": "data", "software": "host" },
+      { "id": "scanner", "label": "Config scanner", "plane": "data", "software": "scanner / agent" },
+      { "id": "baseline-store", "label": "Baseline store", "plane": "data", "software": "config DB" }
+    ],
+    "edges": [
+      { "id": "e-policy-pdp", "from": "baseline-policy", "to": "pdp", "kind": "control" },
+      { "id": "e-asset-scanner", "from": "asset", "to": "scanner", "kind": "data" },
+      { "id": "e-scanner-store", "from": "scanner", "to": "baseline-store", "kind": "data" },
+      { "id": "e-scanner-pdp", "from": "scanner", "to": "pdp", "kind": "decision", "label": "ask" },
+      { "id": "e-pdp-scanner", "from": "pdp", "to": "scanner", "kind": "decision", "label": "decide" }
+    ],
+    "steps": [
+      {
+        "id": "cb-1",
+        "caption": "Asset state is collected by the config scanner.",
+        "highlight": ["asset", "e-asset-scanner", "scanner"],
+        "packet": { "from": "asset", "to": "scanner" }
+      },
+      {
+        "id": "cb-2",
+        "caption": "Scanner asks PDP with baseline drift facts.",
+        "highlight": ["scanner", "e-scanner-pdp", "pdp"],
+        "packet": { "from": "scanner", "to": "pdp" }
+      },
+      {
+        "id": "cb-3",
+        "caption": "PDP evaluates `baseline_id`, `drift_count`, and `approved_exception`.",
+        "highlight": ["pdp", "baseline-policy"]
+      },
+      {
+        "id": "cb-allow",
+        "caption": "ALLOW: asset matches baseline; result lands in the baseline store.",
+        "highlight": ["pdp", "e-pdp-scanner", "scanner", "e-scanner-store", "baseline-store"],
+        "packet": { "from": "scanner", "to": "baseline-store" },
+        "decision": "allow",
+        "fixtureScenarioId": "asset-matches-baseline"
+      },
+      {
+        "id": "cb-deny",
+        "caption": "DENY: unapproved drift fails the baseline check.",
+        "highlight": ["pdp", "e-pdp-scanner", "scanner"],
+        "packet": { "from": "pdp", "to": "scanner" },
+        "decision": "deny",
+        "fixtureScenarioId": "asset-unapproved-drift"
+      }
+    ]
+  },
+  {
+    "familyId": "logging",
+    "topology": "state-collector",
+    "planes": [
+      { "id": "control", "label": "Control plane" },
+      { "id": "data", "label": "Data plane" }
+    ],
+    "nodes": [
+      { "id": "retention-policy", "label": "Retention policy", "plane": "control" },
+      { "id": "pdp", "label": "PDP", "plane": "control", "software": "OPA" },
+      { "id": "log-source", "label": "Log source", "plane": "data", "software": "host / app" },
+      { "id": "collector", "label": "Collector", "plane": "data", "software": "log shipper" },
+      { "id": "siem", "label": "SIEM", "plane": "data", "software": "SIEM" }
+    ],
+    "edges": [
+      { "id": "e-policy-pdp", "from": "retention-policy", "to": "pdp", "kind": "control" },
+      { "id": "e-source-collector", "from": "log-source", "to": "collector", "kind": "data" },
+      { "id": "e-collector-siem", "from": "collector", "to": "siem", "kind": "data" },
+      { "id": "e-collector-pdp", "from": "collector", "to": "pdp", "kind": "decision", "label": "ask" },
+      { "id": "e-pdp-collector", "from": "pdp", "to": "collector", "kind": "decision", "label": "decide" }
+    ],
+    "steps": [
+      {
+        "id": "log-1",
+        "caption": "Log source ships events to the collector.",
+        "highlight": ["log-source", "e-source-collector", "collector"],
+        "packet": { "from": "log-source", "to": "collector" }
+      },
+      {
+        "id": "log-2",
+        "caption": "Collector asks PDP about enablement, retention, and alerting.",
+        "highlight": ["collector", "e-collector-pdp", "pdp"],
+        "packet": { "from": "collector", "to": "pdp" }
+      },
+      {
+        "id": "log-3",
+        "caption": "PDP evaluates `enabled`, `retention_days`, and `alerting`.",
+        "highlight": ["pdp", "retention-policy"]
+      },
+      {
+        "id": "log-allow",
+        "caption": "ALLOW: enabled logging with retention and alerting reaches the SIEM.",
+        "highlight": ["pdp", "e-pdp-collector", "collector", "e-collector-siem", "siem"],
+        "packet": { "from": "collector", "to": "siem" },
+        "decision": "allow",
+        "fixtureScenarioId": "logging-enabled-retained-alerted"
+      },
+      {
+        "id": "log-deny",
+        "caption": "DENY: logging disabled fails the collector check.",
+        "highlight": ["pdp", "e-pdp-collector", "collector"],
+        "packet": { "from": "pdp", "to": "collector" },
+        "decision": "deny",
+        "fixtureScenarioId": "logging-disabled"
+      }
+    ]
+  },
+  {
+    "familyId": "audit-record-generation",
+    "topology": "state-collector",
+    "planes": [
+      { "id": "control", "label": "Control plane" },
+      { "id": "data", "label": "Data plane" }
+    ],
+    "nodes": [
+      { "id": "event-def", "label": "Event definition", "plane": "control" },
+      { "id": "pdp", "label": "PDP", "plane": "control", "software": "OPA" },
+      { "id": "event-source", "label": "Event source", "plane": "data", "software": "app" },
+      { "id": "generator", "label": "Record generator", "plane": "data", "software": "agent" },
+      { "id": "audit-store", "label": "Audit store", "plane": "data" }
+    ],
+    "edges": [
+      { "id": "e-def-pdp", "from": "event-def", "to": "pdp", "kind": "control" },
+      { "id": "e-source-gen", "from": "event-source", "to": "generator", "kind": "data" },
+      { "id": "e-gen-store", "from": "generator", "to": "audit-store", "kind": "data" },
+      { "id": "e-gen-pdp", "from": "generator", "to": "pdp", "kind": "decision", "label": "ask" },
+      { "id": "e-pdp-gen", "from": "pdp", "to": "generator", "kind": "decision", "label": "decide" }
+    ],
+    "steps": [
+      {
+        "id": "au-1",
+        "caption": "Event source feeds the audit record generator.",
+        "highlight": ["event-source", "e-source-gen", "generator"],
+        "packet": { "from": "event-source", "to": "generator" }
+      },
+      {
+        "id": "au-2",
+        "caption": "Generator asks PDP whether defined events produced complete records.",
+        "highlight": ["generator", "e-gen-pdp", "pdp"],
+        "packet": { "from": "generator", "to": "pdp" }
+      },
+      {
+        "id": "au-3",
+        "caption": "PDP evaluates `events_defined`, `records_generated`, and `content_complete`.",
+        "highlight": ["pdp", "event-def"]
+      },
+      {
+        "id": "au-allow",
+        "caption": "ALLOW: complete audit records land in the audit store.",
+        "highlight": ["pdp", "e-pdp-gen", "generator", "e-gen-store", "audit-store"],
+        "packet": { "from": "generator", "to": "audit-store" },
+        "decision": "allow",
+        "fixtureScenarioId": "audit-records-complete"
+      },
+      {
+        "id": "au-deny",
+        "caption": "DENY: records missing required content fail the check.",
+        "highlight": ["pdp", "e-pdp-gen", "generator"],
+        "packet": { "from": "pdp", "to": "generator" },
+        "decision": "deny",
+        "fixtureScenarioId": "audit-records-missing-content"
+      }
+    ]
+  },
+  {
+    "familyId": "flaw-remediation",
+    "topology": "state-collector",
+    "planes": [
+      { "id": "control", "label": "Control plane" },
+      { "id": "data", "label": "Data plane" }
+    ],
+    "nodes": [
+      { "id": "sla-policy", "label": "SLA policy", "plane": "control" },
+      { "id": "pdp", "label": "PDP", "plane": "control", "software": "OPA" },
+      { "id": "scanner", "label": "Scanner", "plane": "data", "software": "vuln scanner" },
+      { "id": "tracker", "label": "Finding tracker", "plane": "data", "software": "vuln platform" },
+      { "id": "vuln-platform", "label": "Vuln platform", "plane": "data", "software": "vuln platform" }
+    ],
+    "edges": [
+      { "id": "e-sla-pdp", "from": "sla-policy", "to": "pdp", "kind": "control" },
+      { "id": "e-scanner-tracker", "from": "scanner", "to": "tracker", "kind": "data" },
+      { "id": "e-tracker-platform", "from": "tracker", "to": "vuln-platform", "kind": "data" },
+      { "id": "e-tracker-pdp", "from": "tracker", "to": "pdp", "kind": "decision", "label": "ask" },
+      { "id": "e-pdp-tracker", "from": "pdp", "to": "tracker", "kind": "decision", "label": "decide" }
+    ],
+    "steps": [
+      {
+        "id": "fr-1",
+        "caption": "Scanner findings enter the finding tracker.",
+        "highlight": ["scanner", "e-scanner-tracker", "tracker"],
+        "packet": { "from": "scanner", "to": "tracker" }
+      },
+      {
+        "id": "fr-2",
+        "caption": "Tracker asks PDP about tracking, severity, age, and exceptions.",
+        "highlight": ["tracker", "e-tracker-pdp", "pdp"],
+        "packet": { "from": "tracker", "to": "pdp" }
+      },
+      {
+        "id": "fr-3",
+        "caption": "PDP evaluates `tracked`, `severity`, `age_days`, and `approved_exception`.",
+        "highlight": ["pdp", "sla-policy"]
+      },
+      {
+        "id": "fr-allow",
+        "caption": "ALLOW: critical finding tracked within SLA stays on the vuln platform.",
+        "highlight": ["pdp", "e-pdp-tracker", "tracker", "e-tracker-platform", "vuln-platform"],
+        "packet": { "from": "tracker", "to": "vuln-platform" },
+        "decision": "allow",
+        "fixtureScenarioId": "finding-critical-open-within-sla"
+      },
+      {
+        "id": "fr-deny",
+        "caption": "DENY: critical finding past SLA fails remediation policy.",
+        "highlight": ["pdp", "e-pdp-tracker", "tracker"],
+        "packet": { "from": "pdp", "to": "tracker" },
+        "decision": "deny",
+        "fixtureScenarioId": "finding-critical-overdue"
+      }
+    ]
+  }
+]

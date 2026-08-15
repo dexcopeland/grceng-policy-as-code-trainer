@@ -2,6 +2,7 @@ import {
   categories,
   controls,
   fixtures,
+  flows,
   frameworks,
   templates,
 } from "@/data";
@@ -88,8 +89,9 @@ export function generateDrill(input: GenerateDrillInput): Drill {
 
   const template = templates.find((t) => t.id === control.templateId);
   const fixture = fixtures.find((f) => f.familyId === control.fixtureFamilyId);
+  const flow = flows.find((f) => f.familyId === control.templateId);
   const category = categories.find((c) => c.id === control.categoryId);
-  if (!template || !fixture || !category) {
+  if (!template || !fixture || !flow || !category) {
     throw new Error("Dataset integrity error for control " + control.id);
   }
 
@@ -128,5 +130,6 @@ export function generateDrill(input: GenerateDrillInput): Drill {
     },
     scenarios: fixture.scenarios,
     quiz: template.quizSeeds.slice(0, 5),
+    flow,
   };
 }
