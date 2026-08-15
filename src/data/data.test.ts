@@ -34,6 +34,24 @@ describe("datasets", () => {
     expect(control?.pacRationale.toLowerCase()).toMatch(/owner|review|account/);
   });
 
+  it("scores AC-2 as Stretch (lifecycle simplified to owner + review-age)", () => {
+    const control = controls.find((c) => c.id === "AC-2");
+    expect(control?.pacApplicability).toBe("stretch");
+    expect(control?.pacRationale.toLowerCase()).toMatch(/lifecycle|simplif/);
+    expect(control?.pacRationale.toLowerCase()).toMatch(/owner|review/);
+  });
+
+  it("scores IAC-01 as Stretch (provision/review/remove simplified to owner + review)", () => {
+    const control = controls.find((c) => c.id === "IAC-01");
+    expect(control?.pacApplicability).toBe("stretch");
+    expect(control?.pacRationale.toLowerCase()).toMatch(/simplif|owner|review/);
+  });
+
+  it("keeps CIS-5.1 as In (inventory with owners and reviews matches the family)", () => {
+    const control = controls.find((c) => c.id === "CIS-5.1");
+    expect(control?.pacApplicability).toBe("in");
+  });
+
   it("includes all eight frameworks", () => {
     expect(frameworks.map((f) => f.id).sort()).toEqual(
       [

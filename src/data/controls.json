@@ -9,8 +9,8 @@
     "relatedFrameworkIds": ["scf", "cmmc"],
     "templateId": "account-management",
     "fixtureFamilyId": "account-management",
-    "pacApplicability": "in",
-    "pacRationale": "Owner and review-age facts support realistic allow/deny; account lifecycle is a distinct teachable pattern."
+    "pacApplicability": "stretch",
+    "pacRationale": "Full account lifecycle (create/enable/modify/disable/remove) is simplified to owner + review-age checks in account-management."
   },
   {
     "id": "AC-3",
@@ -100,8 +100,8 @@
     "relatedFrameworkIds": ["nist-800-53", "soc2", "sox-itgc"],
     "templateId": "account-management",
     "fixtureFamilyId": "account-management",
-    "pacApplicability": "in",
-    "pacRationale": "Provisioning and review facts match account-management allow/deny without distorting the control."
+    "pacApplicability": "stretch",
+    "pacRationale": "Provision/review/remove lifecycle is simplified to owner + review-age checks in account-management."
   },
   {
     "id": "MON-01",
