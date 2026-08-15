@@ -32,9 +32,36 @@ describe("CatalogPage", () => {
 
   it("disables categories with no controls for the selected framework", async () => {
     const onStart = vi.fn();
+    render(
+      <CategoryBrowse
+        categories={[
+          {
+            id: "empty-demo",
+            name: "Empty Demo Category",
+            frameworkIds: ["nist-800-53"],
+          },
+        ]}
+        selectedFrameworkIds={["nist-800-53"]}
+        mode="category"
+        onModeChange={() => {}}
+        onCategoryChange={onStart}
+      />,
+    );
+
+    const emptyCategory = screen.getByRole("button", {
+      name: /empty demo category/i,
+    });
+    expect(emptyCategory).toBeDisabled();
+    expect(emptyCategory).toHaveAttribute("aria-disabled", "true");
+
+    await userEvent.click(emptyCategory);
+    expect(onStart).not.toHaveBeenCalled();
+  });
+
+  it("enables SCF configuration management once a primary control exists", async () => {
+    const onStart = vi.fn();
     render(<CatalogPage onStartDrill={onStart} />);
 
-    // SCF tags Configuration Management but has no primary/related control there.
     await userEvent.click(
       screen.getByRole("checkbox", { name: /secure controls framework/i }),
     );
@@ -42,15 +69,11 @@ describe("CatalogPage", () => {
       screen.getByRole("button", { name: /select category/i }),
     );
 
-    const emptyCategory = screen.getByRole("button", {
+    const configCategory = screen.getByRole("button", {
       name: /configuration management/i,
     });
-    expect(emptyCategory).toBeDisabled();
-    expect(emptyCategory).toHaveAttribute("aria-disabled", "true");
-
-    await userEvent.click(emptyCategory);
-    expect(screen.getByRole("button", { name: /start drill/i })).toBeDisabled();
-    expect(onStart).not.toHaveBeenCalled();
+    expect(configCategory).toBeEnabled();
+    expect(configCategory).not.toHaveAttribute("aria-disabled", "true");
   });
 
   it("enables NIST configuration management once a primary control exists", async () => {

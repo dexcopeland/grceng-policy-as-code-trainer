@@ -110,6 +110,88 @@ describe("datasets", () => {
     }
   });
 
+  it("gives every tagged category×framework cell at least one visible control", () => {
+    for (const category of categories) {
+      for (const frameworkId of category.frameworkIds) {
+        const match = controls.some(
+          (control) =>
+            control.categoryId === category.id &&
+            (control.frameworkId === frameworkId ||
+              (control.relatedFrameworkIds ?? []).includes(frameworkId)),
+        );
+        expect(
+          match,
+          `expected a visible control for ${frameworkId} in ${category.id}`,
+        ).toBe(true);
+      }
+    }
+  });
+
+  it("fills previously empty thin-framework category cells with primary controls", () => {
+    const expectedPrimaries: Array<{
+      id: string;
+      frameworkId: FrameworkId;
+      categoryId: string;
+      templateId: string;
+    }> = [
+      {
+        id: "MON-01",
+        frameworkId: "scf",
+        categoryId: "audit-accountability",
+        templateId: "logging",
+      },
+      {
+        id: "CFG-01",
+        frameworkId: "scf",
+        categoryId: "configuration-management",
+        templateId: "config-baseline",
+      },
+      {
+        id: "CIS-5.1",
+        frameworkId: "cis",
+        categoryId: "identity-access",
+        templateId: "account-management",
+      },
+      {
+        id: "AC-6",
+        frameworkId: "fedramp-rev5",
+        categoryId: "access-control",
+        templateId: "access-enforcement",
+      },
+      {
+        id: "FR20X-IA-01",
+        frameworkId: "fedramp-20x",
+        categoryId: "identity-access",
+        templateId: "account-management",
+      },
+      {
+        id: "IA.L2-3.5.1",
+        frameworkId: "cmmc",
+        categoryId: "identity-access",
+        templateId: "account-management",
+      },
+    ];
+
+    for (const expected of expectedPrimaries) {
+      const control = controls.find((c) => c.id === expected.id);
+      expect(control?.frameworkId).toBe(expected.frameworkId);
+      expect(control?.categoryId).toBe(expected.categoryId);
+      expect(control?.templateId).toBe(expected.templateId);
+      expect(control?.fixtureFamilyId).toBe(expected.templateId);
+    }
+  });
+
+  it("maps FedRAMP AC-6 to access-enforcement, not account-management", () => {
+    const ac6 = controls.find((c) => c.id === "AC-6");
+    expect(ac6?.templateId).toBe("access-enforcement");
+    expect(ac6?.fixtureFamilyId).toBe("access-enforcement");
+    expect(ac6?.objective.toLowerCase()).toMatch(/least privilege/);
+
+    const template = templates.find((t) => t.id === "access-enforcement");
+    expect(template?.regoTemplate).toMatch(/role_approved|action_allowed/);
+    expect(template?.regoTemplate).not.toMatch(/last_review_days/);
+  });
+
   it("pairs every template with a fixture family and quiz seeds", () => {
     const fixtureIds = new Set(fixtures.map((f) => f.familyId));
     for (const template of templates) {

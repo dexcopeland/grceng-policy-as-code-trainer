@@ -87,4 +87,60 @@ describe("generator", () => {
       expect.arrayContaining(["AC-2", "AC-3"]),
     );
   });
+
+  it("generates drills for previously empty thin-framework category cells", () => {
+    const cases: Array<{
+      frameworkId: "scf" | "cis" | "fedramp-rev5" | "fedramp-20x" | "cmmc";
+      categoryId: string;
+      controlId: string;
+    }> = [
+      {
+        frameworkId: "scf",
+        categoryId: "configuration-management",
+        controlId: "CFG-01",
+      },
+      {
+        frameworkId: "scf",
+        categoryId: "audit-accountability",
+        controlId: "MON-01",
+      },
+      { frameworkId: "cis", categoryId: "identity-access", controlId: "CIS-5.1" },
+      {
+        frameworkId: "fedramp-rev5",
+        categoryId: "access-control",
+        controlId: "AC-6",
+      },
+      {
+        frameworkId: "fedramp-20x",
+        categoryId: "identity-access",
+        controlId: "FR20X-IA-01",
+      },
+      {
+        frameworkId: "cmmc",
+        categoryId: "identity-access",
+        controlId: "IA.L2-3.5.1",
+      },
+    ];
+
+    for (const testCase of cases) {
+      const pool = listControlsForSelection(
+        [testCase.frameworkId],
+        testCase.categoryId,
+      );
+      expect(pool.map((c) => c.id)).toEqual(
+        expect.arrayContaining([testCase.controlId]),
+      );
+
+      const drill = generateDrill({
+        frameworkIds: [testCase.frameworkId],
+        mode: "category",
+        categoryId: testCase.categoryId,
+        now: new Date("2026-08-04T12:00:00Z"),
+        random: () => 0,
+      });
+      expect(drill.control.categoryId).toBe(testCase.categoryId);
+      expect(drill.rego).toContain("import rego.v1");
+      expect(drill.scenarios.length).toBeGreaterThanOrEqual(2);
+    }
+  });
 });

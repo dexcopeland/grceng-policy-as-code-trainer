@@ -88,6 +88,39 @@
     "fixtureFamilyId": "account-management"
   },
   {
+    "id": "MON-01",
+    "frameworkId": "scf",
+    "categoryId": "audit-accountability",
+    "title": "Continuous Monitoring Logging",
+    "objective": "Collect, retain, and alert on security-relevant logs so monitoring can detect and investigate events.",
+    "keywords": ["monitoring", "logging", "retention", "alerting"],
+    "relatedFrameworkIds": ["soc2", "fedramp-20x"],
+    "templateId": "logging",
+    "fixtureFamilyId": "logging"
+  },
+  {
+    "id": "CFG-01",
+    "frameworkId": "scf",
+    "categoryId": "configuration-management",
+    "title": "Configuration Baselines",
+    "objective": "Establish and maintain approved configuration baselines, detecting unapproved drift.",
+    "keywords": ["baseline", "hardening", "drift", "configuration"],
+    "relatedFrameworkIds": ["sox-itgc"],
+    "templateId": "config-baseline",
+    "fixtureFamilyId": "config-baseline"
+  },
+  {
+    "id": "CIS-5.1",
+    "frameworkId": "cis",
+    "categoryId": "identity-access",
+    "title": "Establish and Maintain an Inventory of Accounts",
+    "objective": "Maintain an accurate inventory of accounts with owners and periodic access reviews.",
+    "keywords": ["account inventory", "owners", "access review"],
+    "relatedFrameworkIds": ["scf", "soc2"],
+    "templateId": "account-management",
+    "fixtureFamilyId": "account-management"
+  },
+  {
     "id": "CIS-8.2",
     "frameworkId": "cis",
     "categoryId": "audit-accountability",
@@ -132,6 +165,17 @@
     "fixtureFamilyId": "logging"
   },
   {
+    "id": "AC-6",
+    "frameworkId": "fedramp-rev5",
+    "categoryId": "access-control",
+    "title": "Least Privilege",
+    "objective": "Employ the principle of least privilege, allowing only authorized accesses for users and processes necessary to accomplish assigned tasks.",
+    "keywords": ["least privilege", "authorization", "role"],
+    "relatedFrameworkIds": ["nist-800-53", "cmmc"],
+    "templateId": "access-enforcement",
+    "fixtureFamilyId": "access-enforcement"
+  },
+  {
     "id": "FR20X-CM-01",
     "frameworkId": "fedramp-20x",
     "categoryId": "configuration-management",
@@ -143,12 +187,34 @@
     "fixtureFamilyId": "config-baseline"
   },
   {
+    "id": "FR20X-IA-01",
+    "frameworkId": "fedramp-20x",
+    "categoryId": "identity-access",
+    "title": "Continuous Identity Evidence",
+    "objective": "Continuously validate that active accounts have accountable owners and current access reviews.",
+    "keywords": ["continuous monitoring", "identity", "access review", "evidence"],
+    "relatedFrameworkIds": ["fedramp-rev5", "soc2"],
+    "templateId": "account-management",
+    "fixtureFamilyId": "account-management"
+  },
+  {
     "id": "AC.L2-3.1.1",
     "frameworkId": "cmmc",
     "categoryId": "access-control",
     "title": "Authorized Access Control",
     "objective": "Limit system access to authorized users and processes acting on behalf of authorized users.",
     "keywords": ["authorized users", "access", "least privilege"],
+    "relatedFrameworkIds": ["nist-800-53", "scf"],
+    "templateId": "account-management",
+    "fixtureFamilyId": "account-management"
+  },
+  {
+    "id": "IA.L2-3.5.1",
+    "frameworkId": "cmmc",
+    "categoryId": "identity-access",
+    "title": "Identify System Users",
+    "objective": "Identify information system users and associate user identities with accountable owners and current access reviews.",
+    "keywords": ["identify users", "identity", "access review"],
     "relatedFrameworkIds": ["nist-800-53", "scf"],
     "templateId": "account-management",
     "fixtureFamilyId": "account-management"

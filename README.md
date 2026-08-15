@@ -9,13 +9,13 @@ The implementation uses Vite, React, TypeScript, Tailwind CSS, shadcn/ui-style c
 The trainer includes lightweight sample coverage for:
 
 - NIST SP 800-53 (AC, AU, CM, IA, SC, and SI family samples)
-- Secure Controls Framework (SCF)
-- CIS Controls
+- Secure Controls Framework (SCF) (identity, monitoring, and configuration samples)
+- CIS Controls (audit logging and account inventory samples)
 - SOC 2 Trust Services Criteria
 - SOX IT General Controls
-- FedRAMP Rev. 5
-- FedRAMP 20x
-- Cybersecurity Maturity Model Certification (CMMC)
+- FedRAMP Rev. 5 (event logging and least privilege samples)
+- FedRAMP 20x (continuous configuration and identity evidence samples)
+- Cybersecurity Maturity Model Certification (CMMC) (access and identity samples)
 
 ## Local development
 
