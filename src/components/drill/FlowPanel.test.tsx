@@ -1,3 +1,4 @@
+import { StrictMode } from "react";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { FlowPanel } from "@/components/drill/FlowPanel";
@@ -16,11 +17,26 @@ const allowId =
 const denyId =
   drill.scenarios.find((scenario) => scenario.expected === "deny")?.id ?? "";
 
+const allowStep = drill.flow.steps.find(
+  (step) => step.fixtureScenarioId === allowId,
+);
+
 describe("FlowPanel", () => {
   it("starts on the first teaching step for the allow scenario", () => {
     render(<FlowPanel drill={drill} selectedScenarioId={allowId} />);
     expect(screen.getByText(drill.flow.steps[0].caption)).toBeInTheDocument();
     expect(screen.getAllByText(/request-time/i).length).toBeGreaterThan(0);
+  });
+
+  it("keeps the first teaching step under Strict Mode with the allow scenario", () => {
+    render(
+      <StrictMode>
+        <FlowPanel drill={drill} selectedScenarioId={allowId} />
+      </StrictMode>,
+    );
+    expect(screen.getByText(drill.flow.steps[0].caption)).toBeInTheDocument();
+    expect(allowStep).toBeDefined();
+    expect(screen.queryByText(allowStep!.caption)).not.toBeInTheDocument();
   });
 
   it("jumps to the deny decision when Evaluate selects that scenario", async () => {

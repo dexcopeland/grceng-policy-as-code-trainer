@@ -73,7 +73,7 @@ export function FlowPanel({ drill, selectedScenarioId }: FlowPanelProps) {
   const [stepIndex, setStepIndex] = useState(0);
   const [playing, setPlaying] = useState(false);
   const [reducedMotion, setReducedMotion] = useState(prefersReducedMotion);
-  const skipScenarioJump = useRef(true);
+  const lastSeenScenarioId = useRef<string | null>(null);
 
   useEffect(() => {
     const media = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -84,11 +84,16 @@ export function FlowPanel({ drill, selectedScenarioId }: FlowPanelProps) {
   }, []);
 
   useEffect(() => {
-    if (skipScenarioJump.current) {
-      skipScenarioJump.current = false;
+    const scenarioChanged =
+      lastSeenScenarioId.current !== null &&
+      lastSeenScenarioId.current !== selectedScenarioId;
+    lastSeenScenarioId.current = selectedScenarioId;
+
+    if (!scenarioChanged) {
       setStepIndex(0);
       return;
     }
+
     const matchIndex = steps.findIndex(
       (step) => step.fixtureScenarioId === selectedScenarioId,
     );
