@@ -1,0 +1,21 @@
+---
+description: Route control/template/fixture catalog changes through the PaC applicability rubric
+globs:
+  - src/data/controls.json
+  - src/data/templates.json
+  - src/data/fixtures.json
+  - src/data/categories.json
+  - src/types/domain.ts
+  - src/data/data.test.ts
+alwaysApply: false
+---
+
+# Catalog content changes
+
+Before adding or remapping controls, templates, or fixture families:
+
+1. Score the control with `docs/superpowers/specs/2026-08-15-pac-applicability-rubric.md` (In / Stretch / Out).
+2. Follow `docs/superpowers/recipes/adding-a-control.md`.
+3. Set required `pacApplicability` (`in` | `stretch`) and `pacRationale` on every control. Never commit Out controls to `controls.json`.
+
+Unrelated UI or bug-fix PRs are out of scope for this rule.
