@@ -17,6 +17,8 @@ The trainer includes lightweight sample coverage for:
 - FedRAMP 20x (continuous configuration and identity evidence samples)
 - Cybersecurity Maturity Model Certification (CMMC) (access and identity samples)
 
+Coverage is sample-depth, not exhaustive. New controls must pass the [policy-as-code applicability rubric](docs/superpowers/specs/2026-08-15-pac-applicability-rubric.md) (In / Stretch / Out) before they are added. See the [adding a control](docs/superpowers/recipes/adding-a-control.md) recipe.
+
 ## Local development
 
 Install dependencies:
@@ -72,4 +74,6 @@ https://dexcopeland.github.io/grceng-policy-as-code-trainer/
 
 ## Design reference
 
-See the approved design spec: [`docs/superpowers/specs/2026-08-04-policy-as-code-trainer-design.md`](docs/superpowers/specs/2026-08-04-policy-as-code-trainer-design.md).
+- Design spec: [`docs/superpowers/specs/2026-08-04-policy-as-code-trainer-design.md`](docs/superpowers/specs/2026-08-04-policy-as-code-trainer-design.md)
+- PaC applicability rubric: [`docs/superpowers/specs/2026-08-15-pac-applicability-rubric.md`](docs/superpowers/specs/2026-08-15-pac-applicability-rubric.md)
+- Adding a control: [`docs/superpowers/recipes/adding-a-control.md`](docs/superpowers/recipes/adding-a-control.md)

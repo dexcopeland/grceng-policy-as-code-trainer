@@ -23,12 +23,14 @@ A static GitHub Pages web app that helps GRC practitioners practice reading and 
 - Full OPA/Rego runtime in the browser
 - User accounts or server-side progress sync
 - Exhaustive control catalogs for every framework
+- Shipping **Out** controls (documents, meetings, named roles) as drills
 
 ## Product decisions
 
 | Topic | Decision |
 | --- | --- |
 | Content production | Client-side generation from structured JSON + templates |
+| Control selection | Score candidates with the [PaC applicability rubric](2026-08-15-pac-applicability-rubric.md); catalog only **In** / **Stretch** |
 | Teaching format | Human-readable control statement **and** Rego side by side |
 | Practice loop | Study + quiz (plus mock evaluate) |
 | Framework coverage | All listed frameworks, light sample depth |
@@ -52,6 +54,17 @@ Light coverage (~3–6 categories and a handful of controls each):
 - CMMC
 
 Cross-framework labels may appear when a control maps to more than one framework.
+
+### Coverage / content production
+
+Sample depth means we do **not** add a control merely to fill a category button. Before adding or remapping controls, templates, or fixture families:
+
+1. Score the candidate with the [policy-as-code applicability rubric](2026-08-15-pac-applicability-rubric.md) (**In** / **Stretch** / **Out**).
+2. Build **In** by default; build **Stretch** only when the simplified drill still teaches something useful.
+3. Never catalog **Out**.
+4. Follow the [adding a control](../recipes/adding-a-control.md) recipe (control-faithful family, lock-in tests).
+
+Each cataloged control records `pacApplicability` (`"in"` | `"stretch"`) and `pacRationale` so additions cannot skip the score.
 
 ## Architecture
 
@@ -111,6 +124,8 @@ Deploy: GitHub Actions builds `dist/` and publishes to GitHub Pages with repo `b
 - Optional `relatedFrameworkIds[]` for crosswalk display
 - `templateId` — key into `templates[]` for statement/Rego/evidence/quiz composition
 - `fixtureFamilyId` — key into `fixtures[]` for mock evaluation scenarios
+- `pacApplicability` — `"in"` | `"stretch"` (Out is never stored; see [rubric](2026-08-15-pac-applicability-rubric.md))
+- `pacRationale` — short explanation of the score
 
 ### `templates`
 

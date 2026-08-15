@@ -21,6 +21,9 @@ export interface Category {
   frameworkIds: FrameworkId[];
 }
 
+/** Policy-as-code applicability score. Out controls are never stored in the catalog. */
+export type PacApplicability = "in" | "stretch";
+
 export interface Control {
   id: string;
   frameworkId: FrameworkId;
@@ -31,6 +34,10 @@ export interface Control {
   relatedFrameworkIds?: FrameworkId[];
   templateId: string;
   fixtureFamilyId: string;
+  /** Rubric score from docs/superpowers/specs/2026-08-15-pac-applicability-rubric.md */
+  pacApplicability: PacApplicability;
+  /** Short rationale for the In/Stretch score (why this control can be taught as PaC). */
+  pacRationale: string;
 }
 
 export interface PolicyTemplate {
