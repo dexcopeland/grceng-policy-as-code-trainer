@@ -29,7 +29,8 @@ Update, as needed:
 1. `src/data/controls.json` — control with `pacApplicability` + `pacRationale`
 2. `src/data/templates.json` — statement, Rego, annotations, evidence, quiz seeds
 3. `src/data/fixtures.json` — allow and deny scenarios with realistic facts
-4. `src/data/categories.json` — only if a new category is required
+4. `src/data/flows.json` — when adding a **new** template family, author a flow in the matching topology class ([policy flow](../specs/2026-08-15-policy-flow.md)); remapping to an existing family reuses that family's flow
+5. `src/data/categories.json` — only if a new category is required
 
 Keep sample depth. Do not expand into an exhaustive catalog.
 
@@ -50,4 +51,10 @@ npm run lint
 npm run build
 ```
 
-Spot-check the new drill in the UI: statement, Rego, evidence, evaluate allow/deny, and quiz should all teach the same rule.
+Spot-check the new drill in the UI: Flow, statement, Rego, evidence, evaluate allow/deny, and quiz should all teach the same rule. Confirm the Flow topology is honest (no request-time gateway on a review/scanner family).
+
+## Related
+
+- [Policy flow (control plane / data plane)](../specs/2026-08-15-policy-flow.md)
+- [Policy-as-code applicability rubric](../specs/2026-08-15-pac-applicability-rubric.md)
+- [Design spec](../specs/2026-08-04-policy-as-code-trainer-design.md)
