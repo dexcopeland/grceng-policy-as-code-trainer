@@ -12,11 +12,15 @@ interface FlowPanelProps {
 }
 
 const VIEW_WIDTH = 760;
-const VIEW_HEIGHT = 320;
+const VIEW_HEIGHT = 340;
 const NODE_WIDTH = 118;
 const NODE_HEIGHT = 52;
-const CONTROL_Y = 48;
-const DATA_Y = 210;
+/** Plane titles sit in a header row above each swimlane so they never collide with nodes. */
+const CONTROL_TITLE_Y = 24;
+const CONTROL_Y = 78;
+const DATA_TITLE_Y = 188;
+const DATA_Y = 242;
+const DIVIDER_Y = 150;
 
 function prefersReducedMotion(): boolean {
   if (typeof window === "undefined" || !window.matchMedia) return false;
@@ -172,8 +176,10 @@ export function FlowPanel({
           </defs>
 
           <text
+            data-plane-label="control"
+            data-title-slot="header-row"
             x={16}
-            y={28}
+            y={CONTROL_TITLE_Y}
             fill="#ff7a18"
             fontSize="12"
             fontWeight="600"
@@ -182,8 +188,10 @@ export function FlowPanel({
             CONTROL PLANE
           </text>
           <text
+            data-plane-label="data"
+            data-title-slot="header-row"
             x={16}
-            y={190}
+            y={DATA_TITLE_Y}
             fill="#ff7a18"
             fontSize="12"
             fontWeight="600"
@@ -193,9 +201,9 @@ export function FlowPanel({
           </text>
           <line
             x1={12}
-            y1={VIEW_HEIGHT / 2}
+            y1={DIVIDER_Y}
             x2={VIEW_WIDTH - 12}
-            y2={VIEW_HEIGHT / 2}
+            y2={DIVIDER_Y}
             stroke="#2a2a2a"
             strokeDasharray="4 6"
           />
@@ -229,6 +237,9 @@ export function FlowPanel({
             return (
               <g
                 key={node.id}
+                data-flow-node={node.id}
+                data-plane={node.plane}
+                data-lane-y={pos.y}
                 transform={`translate(${pos.x - NODE_WIDTH / 2}, ${pos.y - NODE_HEIGHT / 2})`}
               >
                 <rect

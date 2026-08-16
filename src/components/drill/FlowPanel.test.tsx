@@ -124,6 +124,40 @@ describe("FlowPanel", () => {
     expect(screen.queryByText(allowStep!.caption)).not.toBeInTheDocument();
   });
 
+  it("places plane titles in a header row above each swimlane", () => {
+    const { container } = render(
+      <FlowPanel
+        drill={drill}
+        selectedScenarioId={allowId}
+        userPickedScenario={false}
+      />,
+    );
+
+    const controlTitle = container.querySelector(
+      '[data-plane-label="control"]',
+    );
+    const dataTitle = container.querySelector('[data-plane-label="data"]');
+    expect(controlTitle).toHaveAttribute("data-title-slot", "header-row");
+    expect(dataTitle).toHaveAttribute("data-title-slot", "header-row");
+
+    const controlLaneY = Number(
+      container
+        .querySelector('[data-plane="control"]')
+        ?.getAttribute("data-lane-y"),
+    );
+    const dataLaneY = Number(
+      container
+        .querySelector('[data-plane="data"]')
+        ?.getAttribute("data-lane-y"),
+    );
+    const controlTitleY = Number(controlTitle?.getAttribute("y"));
+    const dataTitleY = Number(dataTitle?.getAttribute("y"));
+
+    // Titles must sit above the node boxes (center ± half height).
+    expect(controlTitleY).toBeLessThan(controlLaneY - 26);
+    expect(dataTitleY).toBeLessThan(dataLaneY - 26);
+  });
+
   it("hides packet travel when prefers-reduced-motion is set", () => {
     const matchMedia = vi.fn().mockImplementation((query: string) => ({
       matches: query.includes("prefers-reduced-motion"),
