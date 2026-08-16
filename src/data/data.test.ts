@@ -1,7 +1,23 @@
-import { categories, controls, fixtures, frameworks, templates } from "./index";
-import type { FrameworkId, PacApplicability } from "@/types/domain";
+import { categories, controls, fixtures, flows, frameworks, templates } from "./index";
+import type {
+  FlowTopology,
+  FrameworkId,
+  PacApplicability,
+} from "@/types/domain";
 
 const ALLOWED_PAC_APPLICABILITY = new Set<PacApplicability>(["in", "stretch"]);
+
+const EXPECTED_FLOW_TOPOLOGY: Record<string, FlowTopology> = {
+  "access-enforcement": "request-time",
+  authentication: "request-time",
+  "boundary-protection": "request-time",
+  "account-management": "periodic-review",
+  "subject-identification": "periodic-review",
+  "config-baseline": "state-collector",
+  logging: "state-collector",
+  "audit-record-generation": "state-collector",
+  "flaw-remediation": "state-collector",
+};
 
 describe("datasets", () => {
   it("requires every control to record an In or Stretch PaC applicability score", () => {
@@ -296,6 +312,98 @@ describe("datasets", () => {
       expect(fixture.scenarios.length).toBeGreaterThanOrEqual(2);
       expect(fixture.scenarios.some((s) => s.expected === "allow")).toBe(true);
       expect(fixture.scenarios.some((s) => s.expected === "deny")).toBe(true);
+    }
+  });
+
+  it("pairs every template family with exactly one flow", () => {
+    const flowIds = flows.map((f) => f.familyId);
+    expect(new Set(flowIds).size).toBe(flowIds.length);
+    expect(flowIds.sort()).toEqual(templates.map((t) => t.id).sort());
+  });
+
+  it("assigns each flow the topology from the family map", () => {
+    for (const flow of flows) {
+      expect(flow.topology).toBe(EXPECTED_FLOW_TOPOLOGY[flow.familyId]);
+      expect(flow.steps.length).toBeGreaterThanOrEqual(4);
+      expect(flow.steps.length).toBeLessThanOrEqual(6);
+    }
+  });
+
+  it("keeps flow step highlights, packets, and edges on known ids", () => {
+    for (const flow of flows) {
+      const nodeIds = new Set(flow.nodes.map((n) => n.id));
+      const edgeIds = new Set(flow.edges.map((e) => e.id));
+      for (const edge of flow.edges) {
+        expect(nodeIds.has(edge.from)).toBe(true);
+        expect(nodeIds.has(edge.to)).toBe(true);
+      }
+      for (const step of flow.steps) {
+        for (const id of step.highlight) {
+          expect(nodeIds.has(id) || edgeIds.has(id)).toBe(true);
+        }
+        if (step.packet) {
+          expect(nodeIds.has(step.packet.from)).toBe(true);
+          expect(nodeIds.has(step.packet.to)).toBe(true);
+        }
+      }
+    }
+  });
+
+  it("references only known fixture scenario ids from flow steps", () => {
+    for (const flow of flows) {
+      const fixture = fixtures.find((f) => f.familyId === flow.familyId);
+      expect(fixture).toBeDefined();
+      const scenarioIds = new Set(fixture?.scenarios.map((s) => s.id));
+      for (const step of flow.steps) {
+        if (step.fixtureScenarioId) {
+          expect(scenarioIds.has(step.fixtureScenarioId)).toBe(true);
+        }
+      }
+    }
+  });
+
+  it("requires request-time families to have a decision edge between PEP and PDP", () => {
+    for (const flow of flows.filter((f) => f.topology === "request-time")) {
+      const pdp = flow.nodes.find(
+        (n) => n.plane === "control" && n.id === "pdp",
+      );
+      expect(pdp).toBeDefined();
+      const decisionEdges = flow.edges.filter((e) => e.kind === "decision");
+      expect(decisionEdges.length).toBeGreaterThan(0);
+      const hasPepToPdp = decisionEdges.some((edge) => {
+        const from = flow.nodes.find((n) => n.id === edge.from);
+        const to = flow.nodes.find((n) => n.id === edge.to);
+        if (!from || !to) return false;
+        const enforcementToPdp =
+          from.plane === "data" &&
+          from.id === "pep" &&
+          to.plane === "control" &&
+          to.id === "pdp";
+        const pdpToEnforcement =
+          from.plane === "control" &&
+          from.id === "pdp" &&
+          to.plane === "data" &&
+          to.id === "pep";
+        return enforcementToPdp || pdpToEnforcement;
+      });
+      expect(hasPepToPdp).toBe(true);
+    }
+  });
+
+  it("keeps periodic-review and state-collector flows free of a live user→PEP→resource path", () => {
+    for (const flow of flows.filter(
+      (f) =>
+        f.topology === "periodic-review" || f.topology === "state-collector",
+    )) {
+      expect(flow.nodes.some((n) => n.id === "pep")).toBe(false);
+      const nodeIds = new Set(flow.nodes.map((n) => n.id));
+      const hasUser = [...nodeIds].some((id) =>
+        /^(user|subject|endpoint)$/.test(id),
+      );
+      const hasResource = [...nodeIds].some((id) =>
+        /^(resource|destination|session)$/.test(id),
+      );
+      expect(hasUser && hasResource).toBe(false);
     }
   });
 });

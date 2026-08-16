@@ -76,4 +76,5 @@ https://dexcopeland.github.io/grceng-policy-as-code-trainer/
 
 - Design spec: [`docs/superpowers/specs/2026-08-04-policy-as-code-trainer-design.md`](docs/superpowers/specs/2026-08-04-policy-as-code-trainer-design.md)
 - PaC applicability rubric: [`docs/superpowers/specs/2026-08-15-pac-applicability-rubric.md`](docs/superpowers/specs/2026-08-15-pac-applicability-rubric.md)
+- Policy flow: [`docs/superpowers/specs/2026-08-15-policy-flow.md`](docs/superpowers/specs/2026-08-15-policy-flow.md)
 - Adding a control: [`docs/superpowers/recipes/adding-a-control.md`](docs/superpowers/recipes/adding-a-control.md)

@@ -58,6 +58,8 @@ describe("generator", () => {
     expect(drill.evidence.query).toMatch(/2026/);
     expect(drill.scenarios.length).toBeGreaterThanOrEqual(2);
     expect(drill.quiz.length).toBeGreaterThanOrEqual(3);
+    expect(drill.flow.familyId).toBe(drill.control.templateId);
+    expect(drill.flow.steps.length).toBeGreaterThanOrEqual(4);
   });
 
   it("returns empty control list for impossible filters", () => {
@@ -157,5 +159,31 @@ describe("generator", () => {
     expect(drill.rego).toMatch(/users_identified|processes_identified|devices_identified/);
     expect(drill.rego).not.toMatch(/last_review_days/);
     expect(drill.statement.toLowerCase()).toMatch(/users|processes|devices/);
+  });
+
+  it("attaches the family flow for access-enforcement and account-management", () => {
+    const access = generateDrill({
+      frameworkIds: ["fedramp-rev5"],
+      mode: "category",
+      categoryId: "access-control",
+      now: new Date("2026-08-04T12:00:00Z"),
+      random: () => 0,
+    });
+    expect(access.control.templateId).toBe("access-enforcement");
+    expect(access.flow.topology).toBe("request-time");
+    expect(access.flow.nodes.some((n) => n.id === "pep")).toBe(true);
+    expect(access.flow.edges.some((e) => e.kind === "decision")).toBe(true);
+
+    const account = generateDrill({
+      frameworkIds: ["cis"],
+      mode: "category",
+      categoryId: "identity-access",
+      now: new Date("2026-08-04T12:00:00Z"),
+      random: () => 0,
+    });
+    expect(account.control.templateId).toBe("account-management");
+    expect(account.flow.topology).toBe("periodic-review");
+    expect(account.flow.nodes.some((n) => n.id === "pep")).toBe(false);
+    expect(account.flow.nodes.some((n) => n.id === "review-job")).toBe(true);
   });
 });

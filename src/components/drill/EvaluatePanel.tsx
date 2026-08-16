@@ -10,14 +10,17 @@ import type { Drill } from "@/types/domain";
 
 interface EvaluatePanelProps {
   drill: Drill;
+  selectedScenarioId: string;
+  onSelectScenario(scenarioId: string): void;
 }
 
 type EvaluationChoice = "allow" | "deny";
 
-export function EvaluatePanel({ drill }: EvaluatePanelProps) {
-  const [selectedScenarioId, setSelectedScenarioId] = useState(
-    drill.scenarios[0]?.id ?? "",
-  );
+export function EvaluatePanel({
+  drill,
+  selectedScenarioId,
+  onSelectScenario,
+}: EvaluatePanelProps) {
   const [result, setResult] = useState<EvaluationResult | null>(null);
 
   const selectedScenario = useMemo(
@@ -28,7 +31,7 @@ export function EvaluatePanel({ drill }: EvaluatePanelProps) {
   );
 
   function handleSelectScenario(scenarioId: string) {
-    setSelectedScenarioId(scenarioId);
+    onSelectScenario(scenarioId);
     setResult(null);
   }
 

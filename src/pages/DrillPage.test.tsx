@@ -35,7 +35,21 @@ describe("DrillPage", () => {
     expect(
       screen.getByRole("region", { name: /policy as code/i }),
     ).toBeInTheDocument();
-    expect(screen.getByRole("tabpanel", { name: /evidence/i })).toBeVisible();
+    expect(screen.getByRole("tabpanel", { name: /flow/i })).toBeVisible();
+    expect(screen.getByRole("tab", { name: /^flow$/i })).toHaveAttribute(
+      "aria-selected",
+      "true",
+    );
+  });
+
+  it("renders flow playback controls on the default tab", () => {
+    render(<DrillPage drill={drill} onBack={() => {}} />);
+
+    expect(
+      screen.getByRole("region", { name: /policy flow diagram/i }),
+    ).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /^play$/i })).toBeInTheDocument();
+    expect(screen.getByText(drill.flow.steps[0].caption)).toBeInTheDocument();
   });
 
   it("evaluates a scenario choice", async () => {

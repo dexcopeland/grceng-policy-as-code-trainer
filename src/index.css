@@ -133,6 +133,29 @@ h6 {
   animation: quiz-feedback-pulse 220ms ease-out;
 }
 
+.flow-packet {
+  animation: flow-packet-travel 900ms ease-in-out forwards;
+  transform: translate(var(--packet-x1), var(--packet-y1));
+}
+
+@keyframes flow-packet-travel {
+  from {
+    transform: translate(var(--packet-x1), var(--packet-y1));
+    opacity: 0.35;
+  }
+  to {
+    transform: translate(var(--packet-x2), var(--packet-y2));
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .flow-packet {
+    animation: none;
+    display: none;
+  }
+}
+
 @keyframes drill-enter {
   from {
     opacity: 0;

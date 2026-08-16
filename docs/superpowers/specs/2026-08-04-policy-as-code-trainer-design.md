@@ -12,6 +12,7 @@ A static GitHub Pages web app that helps GRC practitioners practice reading and 
 
 - Teach what goes into policy-as-code (structure, inputs, decisions).
 - Show how control statements map to Rego-style rules.
+- Show where the policy decision happens (control plane vs data plane). See [policy flow](2026-08-15-policy-flow.md).
 - Illustrate programmatic evidence gathering for a time period.
 - Provide lightweight practice via mock evaluation and quizzes.
 - Ship as a client-only app on GitHub Pages (no backend).
@@ -38,7 +39,8 @@ A static GitHub Pages web app that helps GRC practitioners practice reading and 
 | Progress | `localStorage` (recent drills, quiz scores, frameworks practiced) |
 | IA | Catalog browse + drill (Approach 2) |
 | Catalog layout | Sidebar: frameworks left, categories/controls right |
-| Drill layout | Split statement + Rego; Evidence / Evaluate / Quiz below |
+| Drill layout | Split statement + Rego; Flow / Evidence / Evaluate / Quiz below |
+| Flow diagrams | Canned per template family (not live infra); see [policy flow](2026-08-15-policy-flow.md) |
 
 ## Frameworks in v1
 
@@ -97,11 +99,12 @@ Deploy: GitHub Actions builds `dist/` and publishes to GitHub Pages with repo `b
 - Split view:
   - Left: control statement (policy prose)
   - Right: Rego policy on a light code-block surface + section annotations
-- Below the split: three secondary panels (accordion or segmented control — not top-level tabs that hide the split):
+- Below the split: four secondary panels (accordion or segmented control — not top-level tabs that hide the split):
+  - **Flow** — stepped control-plane / data-plane diagram for the template family ([policy flow](2026-08-15-policy-flow.md))
   - **Evidence** — what to collect, sample time-bounded query, example artifacts
   - **Evaluate** — choose canned scenario → pass/fail + which clause matched
   - **Quiz** — 3–5 questions, immediate feedback, score saved
-- Default: Evidence expanded first; Evaluate and Quiz remain reachable without leaving the statement/Rego view.
+- Default: Flow expanded first; Evidence, Evaluate, and Quiz remain reachable without leaving the statement/Rego view.
 
 ### Progress
 
@@ -141,6 +144,12 @@ Deploy: GitHub Actions builds `dist/` and publishes to GitHub Pages with repo `b
 - Canned evaluation inputs and expected allow/deny per control family
 - Short explanations for matched clauses
 
+### `flows`
+
+- Identified by `familyId`, matching `templates[].id` / `controls[].templateId`
+- Canned control-plane / data-plane diagrams per template family (see [policy flow](2026-08-15-policy-flow.md))
+- Topology class (`request-time` | `periodic-review` | `state-collector`), nodes, edges, and stepped captions
+
 ## Generator behavior
 
 1. Filter controls by selected framework(s) and category (or pick a random category in scope).
@@ -149,6 +158,7 @@ Deploy: GitHub Actions builds `dist/` and publishes to GitHub Pages with repo `b
    - Control statement
    - Rego from template + control-specific parameters
    - Annotations mapped to Rego sections
+   - Flow diagram from the family flow (`drill.flow`)
    - Evidence plan + sample time-window query
    - 2–3 mock test cases
    - 3–5 quiz items
@@ -167,7 +177,7 @@ Deploy: GitHub Actions builds `dist/` and publishes to GitHub Pages with repo `b
 - Headings and accents: orange (`#ff7a18`)
 - Code blocks: light cream/off-white surface, dark text (theme exception)
 - Distinctive display font for brand/headings; monospace for code
-- Motion: sidebar selection transition, drill panel enter, quiz feedback pulse
+- Motion: sidebar selection transition, drill panel enter, quiz feedback pulse; Flow uses a stepped packet animation with a `prefers-reduced-motion` fallback (diagram + captions, no packet travel)
 - Mobile: frameworks become a top selector; catalog stacks; drill stacks statement above Rego
 
 ## Edge cases
@@ -179,14 +189,16 @@ Deploy: GitHub Actions builds `dist/` and publishes to GitHub Pages with repo `b
 
 ## Testing
 
-- Unit tests: generator filtering/composition; mock evaluator decisions
-- Component smoke tests: catalog selection; drill render
+- Unit tests: generator filtering/composition; mock evaluator decisions; every template family has a matching flow
+- Component smoke tests: catalog selection; drill render (Flow present and default)
+- Missing family flow fails tests
 - Manual verification of GitHub Pages base path after deploy
 
 ## Success criteria
 
 - User can select frameworks, browse categories, and open a drill in under a minute.
-- Each drill shows statement + annotated Rego + evidence guidance.
+- Each drill shows statement + annotated Rego + Flow + evidence guidance.
+- Flow is present on every drill; missing family flow fails tests.
 - Mock evaluate returns an understandable pass/fail explanation.
 - Quiz feedback is immediate; scores survive refresh via `localStorage`.
 - App loads correctly from GitHub Pages on desktop and mobile.
