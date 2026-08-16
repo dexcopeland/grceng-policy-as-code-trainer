@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
+import { useEffect, useMemo, useState, type CSSProperties } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
@@ -7,6 +7,8 @@ import type { Drill, FlowNode, FlowStep, PolicyFlow } from "@/types/domain";
 interface FlowPanelProps {
   drill: Drill;
   selectedScenarioId: string;
+  /** True once the user picks a scenario in Evaluate; survives FlowPanel remounts. */
+  userPickedScenario: boolean;
 }
 
 const VIEW_WIDTH = 760;
@@ -63,7 +65,11 @@ function edgePath(
   return `M ${from.x} ${from.y} L ${to.x} ${to.y}`;
 }
 
-export function FlowPanel({ drill, selectedScenarioId }: FlowPanelProps) {
+export function FlowPanel({
+  drill,
+  selectedScenarioId,
+  userPickedScenario,
+}: FlowPanelProps) {
   const flow = drill.flow;
   const steps = useMemo(
     () => playableSteps(flow, selectedScenarioId),
@@ -73,7 +79,6 @@ export function FlowPanel({ drill, selectedScenarioId }: FlowPanelProps) {
   const [stepIndex, setStepIndex] = useState(0);
   const [playing, setPlaying] = useState(false);
   const [reducedMotion, setReducedMotion] = useState(prefersReducedMotion);
-  const lastSeenScenarioId = useRef<string | null>(null);
 
   useEffect(() => {
     const media = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -84,12 +89,7 @@ export function FlowPanel({ drill, selectedScenarioId }: FlowPanelProps) {
   }, []);
 
   useEffect(() => {
-    const scenarioChanged =
-      lastSeenScenarioId.current !== null &&
-      lastSeenScenarioId.current !== selectedScenarioId;
-    lastSeenScenarioId.current = selectedScenarioId;
-
-    if (!scenarioChanged) {
+    if (!userPickedScenario) {
       setStepIndex(0);
       return;
     }
@@ -99,7 +99,7 @@ export function FlowPanel({ drill, selectedScenarioId }: FlowPanelProps) {
     );
     setStepIndex(matchIndex >= 0 ? matchIndex : 0);
     setPlaying(false);
-  }, [selectedScenarioId, steps]);
+  }, [selectedScenarioId, steps, userPickedScenario]);
 
   useEffect(() => {
     if (!playing) return;

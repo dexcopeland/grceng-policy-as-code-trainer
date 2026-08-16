@@ -65,6 +65,36 @@ describe("DrillPage", () => {
     expect(screen.getByText(/matched clause/i)).toBeInTheDocument();
   });
 
+  it("keeps the Flow deny stamp after leaving Evaluate and returning to Flow", async () => {
+    const user = userEvent.setup();
+    const denyScenario = drill.scenarios.find(
+      (scenario) => scenario.expected === "deny",
+    );
+    expect(denyScenario).toBeDefined();
+    const denyStep = drill.flow.steps.find(
+      (step) => step.fixtureScenarioId === denyScenario!.id,
+    );
+    expect(denyStep).toBeDefined();
+
+    render(<DrillPage drill={drill} onBack={() => {}} />);
+
+    expect(screen.getByText(drill.flow.steps[0].caption)).toBeInTheDocument();
+
+    await user.click(screen.getByRole("tab", { name: /evaluate/i }));
+    await user.click(
+      screen.getByRole("button", {
+        name: new RegExp(denyScenario!.name, "i"),
+      }),
+    );
+    await user.click(screen.getByRole("tab", { name: /^flow$/i }));
+
+    expect(screen.getByText(denyStep!.caption)).toBeInTheDocument();
+    expect(screen.getByText(/^deny$/i)).toBeInTheDocument();
+    expect(
+      screen.queryByText(drill.flow.steps[0].caption),
+    ).not.toBeInTheDocument();
+  });
+
   it("saves a quiz score and shows feedback", async () => {
     const user = userEvent.setup();
     render(<DrillPage drill={drill} onBack={() => {}} />);

@@ -20,10 +20,19 @@ const denyId =
 const allowStep = drill.flow.steps.find(
   (step) => step.fixtureScenarioId === allowId,
 );
+const denyStep = drill.flow.steps.find(
+  (step) => step.fixtureScenarioId === denyId,
+);
 
 describe("FlowPanel", () => {
   it("starts on the first teaching step for the allow scenario", () => {
-    render(<FlowPanel drill={drill} selectedScenarioId={allowId} />);
+    render(
+      <FlowPanel
+        drill={drill}
+        selectedScenarioId={allowId}
+        userPickedScenario={false}
+      />,
+    );
     expect(screen.getByText(drill.flow.steps[0].caption)).toBeInTheDocument();
     expect(screen.getAllByText(/request-time/i).length).toBeGreaterThan(0);
   });
@@ -31,7 +40,11 @@ describe("FlowPanel", () => {
   it("keeps the first teaching step under Strict Mode with the allow scenario", () => {
     render(
       <StrictMode>
-        <FlowPanel drill={drill} selectedScenarioId={allowId} />
+        <FlowPanel
+          drill={drill}
+          selectedScenarioId={allowId}
+          userPickedScenario={false}
+        />
       </StrictMode>,
     );
     expect(screen.getByText(drill.flow.steps[0].caption)).toBeInTheDocument();
@@ -42,16 +55,73 @@ describe("FlowPanel", () => {
   it("jumps to the deny decision when Evaluate selects that scenario", async () => {
     const user = userEvent.setup();
     const { rerender } = render(
-      <FlowPanel drill={drill} selectedScenarioId={allowId} />,
+      <FlowPanel
+        drill={drill}
+        selectedScenarioId={allowId}
+        userPickedScenario={false}
+      />,
     );
     await user.click(screen.getByRole("button", { name: /^next$/i }));
-    rerender(<FlowPanel drill={drill} selectedScenarioId={denyId} />);
-    const denyStep = drill.flow.steps.find(
-      (step) => step.fixtureScenarioId === denyId,
+    rerender(
+      <FlowPanel
+        drill={drill}
+        selectedScenarioId={denyId}
+        userPickedScenario={true}
+      />,
     );
     expect(denyStep).toBeDefined();
     expect(screen.getByText(denyStep!.caption)).toBeInTheDocument();
     expect(screen.getByText(/^deny$/i)).toBeInTheDocument();
+  });
+
+  it("lands on DENY when remounted after the user picked a deny scenario", () => {
+    const { unmount } = render(
+      <FlowPanel
+        drill={drill}
+        selectedScenarioId={denyId}
+        userPickedScenario={true}
+      />,
+    );
+    expect(denyStep).toBeDefined();
+    expect(screen.getByText(denyStep!.caption)).toBeInTheDocument();
+    expect(screen.getByText(/^deny$/i)).toBeInTheDocument();
+
+    unmount();
+    render(
+      <FlowPanel
+        drill={drill}
+        selectedScenarioId={denyId}
+        userPickedScenario={true}
+      />,
+    );
+    expect(screen.getByText(denyStep!.caption)).toBeInTheDocument();
+    expect(screen.getByText(/^deny$/i)).toBeInTheDocument();
+    expect(
+      screen.queryByText(drill.flow.steps[0].caption),
+    ).not.toBeInTheDocument();
+  });
+
+  it("stays on the first teaching step when remounted with default allow and no user pick", () => {
+    const { unmount } = render(
+      <FlowPanel
+        drill={drill}
+        selectedScenarioId={allowId}
+        userPickedScenario={false}
+      />,
+    );
+    expect(screen.getByText(drill.flow.steps[0].caption)).toBeInTheDocument();
+
+    unmount();
+    render(
+      <FlowPanel
+        drill={drill}
+        selectedScenarioId={allowId}
+        userPickedScenario={false}
+      />,
+    );
+    expect(screen.getByText(drill.flow.steps[0].caption)).toBeInTheDocument();
+    expect(allowStep).toBeDefined();
+    expect(screen.queryByText(allowStep!.caption)).not.toBeInTheDocument();
   });
 
   it("hides packet travel when prefers-reduced-motion is set", () => {
@@ -68,7 +138,11 @@ describe("FlowPanel", () => {
     vi.stubGlobal("matchMedia", matchMedia);
 
     const { container } = render(
-      <FlowPanel drill={drill} selectedScenarioId={allowId} />,
+      <FlowPanel
+        drill={drill}
+        selectedScenarioId={allowId}
+        userPickedScenario={false}
+      />,
     );
     expect(container.querySelector(".flow-packet")).toBeNull();
     vi.unstubAllGlobals();
