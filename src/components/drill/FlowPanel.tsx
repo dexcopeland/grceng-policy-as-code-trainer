@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
+import { useEffect, useMemo, useState, type CSSProperties } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
@@ -7,14 +7,20 @@ import type { Drill, FlowNode, FlowStep, PolicyFlow } from "@/types/domain";
 interface FlowPanelProps {
   drill: Drill;
   selectedScenarioId: string;
+  /** True once the user picks a scenario in Evaluate; survives FlowPanel remounts. */
+  userPickedScenario: boolean;
 }
 
 const VIEW_WIDTH = 760;
-const VIEW_HEIGHT = 320;
+const VIEW_HEIGHT = 340;
 const NODE_WIDTH = 118;
 const NODE_HEIGHT = 52;
-const CONTROL_Y = 48;
-const DATA_Y = 210;
+/** Plane titles sit in a header row above each swimlane so they never collide with nodes. */
+const CONTROL_TITLE_Y = 24;
+const CONTROL_Y = 78;
+const DATA_TITLE_Y = 188;
+const DATA_Y = 242;
+const DIVIDER_Y = 150;
 
 function prefersReducedMotion(): boolean {
   if (typeof window === "undefined" || !window.matchMedia) return false;
@@ -63,7 +69,11 @@ function edgePath(
   return `M ${from.x} ${from.y} L ${to.x} ${to.y}`;
 }
 
-export function FlowPanel({ drill, selectedScenarioId }: FlowPanelProps) {
+export function FlowPanel({
+  drill,
+  selectedScenarioId,
+  userPickedScenario,
+}: FlowPanelProps) {
   const flow = drill.flow;
   const steps = useMemo(
     () => playableSteps(flow, selectedScenarioId),
@@ -73,7 +83,6 @@ export function FlowPanel({ drill, selectedScenarioId }: FlowPanelProps) {
   const [stepIndex, setStepIndex] = useState(0);
   const [playing, setPlaying] = useState(false);
   const [reducedMotion, setReducedMotion] = useState(prefersReducedMotion);
-  const lastSeenScenarioId = useRef<string | null>(null);
 
   useEffect(() => {
     const media = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -84,12 +93,7 @@ export function FlowPanel({ drill, selectedScenarioId }: FlowPanelProps) {
   }, []);
 
   useEffect(() => {
-    const scenarioChanged =
-      lastSeenScenarioId.current !== null &&
-      lastSeenScenarioId.current !== selectedScenarioId;
-    lastSeenScenarioId.current = selectedScenarioId;
-
-    if (!scenarioChanged) {
+    if (!userPickedScenario) {
       setStepIndex(0);
       return;
     }
@@ -99,7 +103,7 @@ export function FlowPanel({ drill, selectedScenarioId }: FlowPanelProps) {
     );
     setStepIndex(matchIndex >= 0 ? matchIndex : 0);
     setPlaying(false);
-  }, [selectedScenarioId, steps]);
+  }, [selectedScenarioId, steps, userPickedScenario]);
 
   useEffect(() => {
     if (!playing) return;
@@ -172,8 +176,10 @@ export function FlowPanel({ drill, selectedScenarioId }: FlowPanelProps) {
           </defs>
 
           <text
+            data-plane-label="control"
+            data-title-slot="header-row"
             x={16}
-            y={28}
+            y={CONTROL_TITLE_Y}
             fill="#ff7a18"
             fontSize="12"
             fontWeight="600"
@@ -182,8 +188,10 @@ export function FlowPanel({ drill, selectedScenarioId }: FlowPanelProps) {
             CONTROL PLANE
           </text>
           <text
+            data-plane-label="data"
+            data-title-slot="header-row"
             x={16}
-            y={190}
+            y={DATA_TITLE_Y}
             fill="#ff7a18"
             fontSize="12"
             fontWeight="600"
@@ -193,9 +201,9 @@ export function FlowPanel({ drill, selectedScenarioId }: FlowPanelProps) {
           </text>
           <line
             x1={12}
-            y1={VIEW_HEIGHT / 2}
+            y1={DIVIDER_Y}
             x2={VIEW_WIDTH - 12}
-            y2={VIEW_HEIGHT / 2}
+            y2={DIVIDER_Y}
             stroke="#2a2a2a"
             strokeDasharray="4 6"
           />
@@ -229,6 +237,9 @@ export function FlowPanel({ drill, selectedScenarioId }: FlowPanelProps) {
             return (
               <g
                 key={node.id}
+                data-flow-node={node.id}
+                data-plane={node.plane}
+                data-lane-y={pos.y}
                 transform={`translate(${pos.x - NODE_WIDTH / 2}, ${pos.y - NODE_HEIGHT / 2})`}
               >
                 <rect

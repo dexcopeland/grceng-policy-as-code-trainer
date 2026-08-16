@@ -31,6 +31,7 @@ export function DrillView({ drill, onBack }: DrillViewProps) {
   const [selectedScenarioId, setSelectedScenarioId] = useState(() =>
     defaultScenarioId(drill),
   );
+  const [userPickedScenario, setUserPickedScenario] = useState(false);
 
   const scenarioId = useMemo(() => {
     if (drill.scenarios.some((scenario) => scenario.id === selectedScenarioId)) {
@@ -38,6 +39,11 @@ export function DrillView({ drill, onBack }: DrillViewProps) {
     }
     return defaultScenarioId(drill);
   }, [drill, selectedScenarioId]);
+
+  function handleSelectScenario(scenarioId: string) {
+    setSelectedScenarioId(scenarioId);
+    setUserPickedScenario(true);
+  }
 
   return (
     <div className="drill-enter mx-auto flex max-w-7xl flex-col gap-6">
@@ -83,7 +89,11 @@ export function DrillView({ drill, onBack }: DrillViewProps) {
             </TabsTrigger>
           </TabsList>
           <TabsContent value="flow" className="animate-in fade-in">
-            <FlowPanel drill={drill} selectedScenarioId={scenarioId} />
+            <FlowPanel
+              drill={drill}
+              selectedScenarioId={scenarioId}
+              userPickedScenario={userPickedScenario}
+            />
           </TabsContent>
           <TabsContent value="evidence" className="animate-in fade-in">
             <EvidencePanel drill={drill} />
@@ -92,7 +102,7 @@ export function DrillView({ drill, onBack }: DrillViewProps) {
             <EvaluatePanel
               drill={drill}
               selectedScenarioId={scenarioId}
-              onSelectScenario={setSelectedScenarioId}
+              onSelectScenario={handleSelectScenario}
             />
           </TabsContent>
           <TabsContent value="quiz" className="animate-in fade-in">
